@@ -8,6 +8,8 @@ import { Home } from './pages/Home';
 import { CreateCharacter } from './pages/CreateCharacter';
 import { LoadCharacter } from './pages/LoadCharacter';
 import { CharacterSheet } from './pages/CharacterSheet';
+import { WikiDrawerProvider } from './components/wiki/WikiDrawerContext';
+import { EntityDrawer } from './components/wiki/EntityDrawer';
 
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
@@ -18,16 +20,19 @@ export default function App() {
     <MantineProvider theme={theme} defaultColorScheme="dark">
       <Notifications position="top-right" />
       <ModalsProvider>
-        <BrowserRouter>
-          <AppShell>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/create" element={<CreateCharacter />} />
-              <Route path="/load" element={<LoadCharacter />} />
-              <Route path="/character/:id" element={<CharacterSheet />} />
-            </Routes>
-          </AppShell>
-        </BrowserRouter>
+        <WikiDrawerProvider>
+          <BrowserRouter>
+            <AppShell>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/create" element={<CreateCharacter />} />
+                <Route path="/load" element={<LoadCharacter />} />
+                <Route path="/character/:id" element={<CharacterSheet />} />
+              </Routes>
+            </AppShell>
+          </BrowserRouter>
+          <EntityDrawer />
+        </WikiDrawerProvider>
       </ModalsProvider>
     </MantineProvider>
   );

@@ -153,6 +153,26 @@ function edition(source: string, editionField?: string): string {
   return "classic";
 }
 
+// --- Data parsing helpers ---
+
+const ALL_SKILLS = [
+  "acrobatics", "animal handling", "arcana", "athletics",
+  "deception", "history", "insight", "intimidation",
+  "investigation", "medicine", "nature", "perception",
+  "performance", "persuasion", "religion", "sleight of hand",
+  "stealth", "survival",
+];
+
+/** Parse 5e.tools skill proficiency entry into {from, count} or null */
+function parseSkillChoices(skill: any): { from: string[]; count: number } | null {
+  if (!skill) return null;
+  // Standard format: {"choose": {"from": [...], "count": N}}
+  if (skill.choose) return skill.choose;
+  // "Any" format: {"any": N} — choose N from all skills
+  if (skill.any) return { from: ALL_SKILLS, count: skill.any };
+  return null;
+}
+
 // --- Importers ---
 
 async function importSpells(): Promise<{ created: number; updated: number }> {
@@ -220,7 +240,7 @@ async function importClasses(): Promise<{ created: number; updated: number }> {
         armorProficiencies: c.startingProficiencies?.armor || [],
         weaponProficiencies: c.startingProficiencies?.weapons || [],
         toolProficiencies: c.startingProficiencies?.tools || [],
-        skillChoices: c.startingProficiencies?.skills?.[0]?.choose || null,
+        skillChoices: parseSkillChoices(c.startingProficiencies?.skills?.[0]),
         startingEquipment: c.startingEquipment?.entries || c.startingEquipment?.defaultData || [],
         classFeatures: c.classFeatures || [],
         subclassTitle: c.subclassTitle || "Subclass",
@@ -230,6 +250,7 @@ async function importClasses(): Promise<{ created: number; updated: number }> {
         spellSlotProgression: c.classTableGroups
           ?.find((g: any) => g.rowsSpellProgression)
           ?.rowsSpellProgression || null,
+        classTableGroups: c.classTableGroups || null,
       };
 
       const result = await upsert("classes", record);
@@ -479,12 +500,727 @@ async function importBackgrounds(): Promise<{ created: number; updated: number }
 
 // --- Main ---
 
+async function importFeats(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "feats.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const f of (data.feat || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: f.name,
+      source: f.source,
+      edition: edition(f.source, f.edition),
+      category: f.category || null,
+      prerequisite: f.prerequisite || null,
+      ability: f.ability || null,
+      entries: f.entries || [],
+      repeatable: !!f.repeatable,
+    };
+    const result = await upsert("feats", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importConditions(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "conditionsdiseases.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const c of (data.condition || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: c.name,
+      source: c.source,
+      edition: edition(c.source, c.edition),
+      kind: "condition",
+      entries: c.entries || [],
+    };
+    const result = await upsert("conditions", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  // Import diseases
+  for (const d of (data.disease || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: d.name,
+      source: d.source,
+      edition: edition(d.source, d.edition),
+      kind: "disease",
+      entries: d.entries || [],
+    };
+    const result = await upsert("conditions", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  // Import statuses
+  for (const s of (data.status || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: s.name,
+      source: s.source,
+      edition: edition(s.source, s.edition),
+      kind: "status",
+      entries: s.entries || [],
+    };
+    const result = await upsert("conditions", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importSkills(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "skills.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const s of (data.skill || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: s.name,
+      source: s.source,
+      edition: edition(s.source, s.edition),
+      ability: typeof s.ability === "string" ? s.ability : Object.keys(s.ability || {})[0] || null,
+      entries: s.entries || [],
+    };
+    const result = await upsert("skills", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importVariantRules(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "variantrules.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const v of (data.variantrule || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: v.name,
+      source: v.source,
+      edition: edition(v.source, v.edition),
+      ruleType: v.ruleType || null,
+      entries: v.entries || [],
+    };
+    const result = await upsert("variantrules", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importActions(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "actions.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const a of (data.action || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: a.name,
+      source: a.source,
+      edition: edition(a.source, a.edition),
+      entries: a.entries || [],
+      time: a.time || null,
+    };
+    const result = await upsert("actions", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importOptionalFeatures(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "optionalfeatures.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const f of (data.optionalfeature || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: f.name,
+      source: f.source,
+      edition: edition(f.source, f.edition),
+      featureType: f.featureType || null,
+      prerequisite: f.prerequisite || null,
+      entries: f.entries || [],
+    };
+    const result = await upsert("optionalfeatures", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importSenses(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "senses.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const s of (data.sense || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: s.name,
+      source: s.source,
+      edition: edition(s.source, s.edition),
+      entries: s.entries || [],
+    };
+    const result = await upsert("senses", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importLanguages(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "languages.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const l of (data.language || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: l.name,
+      source: l.source,
+      edition: edition(l.source, l.edition),
+      typicalSpeakers: l.typicalSpeakers || null,
+      script: l.script || null,
+      languageType: l.type || null,
+      entries: l.entries || [],
+    };
+    const result = await upsert("languages", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+
+  // Language scripts
+  for (const ls of (data.languageScript || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: ls.name,
+      source: ls.source,
+      edition: edition(ls.source, ls.edition),
+      entries: ls.entries || [],
+    };
+    const result = await upsert("language_scripts", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importDeities(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "deities.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const d of (data.deity || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: d.name,
+      source: d.source,
+      edition: edition(d.source, d.edition),
+      alignment: d.alignment || null,
+      domains: d.domains || null,
+      pantheon: d.pantheon || null,
+      symbol: d.symbol || null,
+      entries: d.entries || [],
+    };
+    const result = await upsert("deities", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importTablesData(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "tables.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const t of (data.table || []).filter((x: any) => !x._copy && x.name)) {
+    const record = {
+      name: t.name,
+      source: t.source,
+      edition: edition(t.source, t.edition),
+      colLabels: t.colLabels || null,
+      rows: t.rows || null,
+      entries: t.entries || [],
+    };
+    const result = await upsert("tables_data", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importRewards(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "rewards.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const r of (data.reward || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: r.name,
+      source: r.source,
+      edition: edition(r.source, r.edition),
+      rewardType: r.type || null,
+      entries: r.entries || [],
+    };
+    const result = await upsert("rewards", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importTrapsHazards(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "trapshazards.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const t of (data.trap || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: t.name,
+      source: t.source,
+      edition: edition(t.source, t.edition),
+      kind: "trap",
+      trapHazType: t.trapHazType || null,
+      entries: t.entries || [],
+    };
+    const result = await upsert("trapshazards", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  for (const h of (data.hazard || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: h.name,
+      source: h.source,
+      edition: edition(h.source, h.edition),
+      kind: "hazard",
+      trapHazType: h.trapHazType || null,
+      entries: h.entries || [],
+    };
+    const result = await upsert("trapshazards", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importObjects(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "objects.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const o of (data.object || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: o.name,
+      source: o.source,
+      edition: edition(o.source, o.edition),
+      size: o.size || null,
+      objectType: o.objectType || null,
+      ac: o.ac || null,
+      hp: o.hp || null,
+      entries: o.entries || [],
+    };
+    const result = await upsert("objects", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importBastions(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "bastions.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const f of (data.facility || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: f.name,
+      source: f.source,
+      edition: edition(f.source, f.edition),
+      facilityType: f.facilityType || null,
+      level: f.level || null,
+      entries: f.entries || [],
+    };
+    const result = await upsert("bastions", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importCharCreationOptions(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "charcreationoptions.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const c of (data.charoption || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: c.name,
+      source: c.source,
+      edition: edition(c.source, c.edition),
+      optionType: c.optionType || null,
+      entries: c.entries || [],
+    };
+    const result = await upsert("charcreationoptions", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importPsionics(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "psionics.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const p of (data.psionic || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: p.name,
+      source: p.source,
+      edition: edition(p.source, p.edition),
+      psiType: p.type?.name || p.type || null,
+      entries: p.entries || [],
+    };
+    const result = await upsert("psionics", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importCreatures(): Promise<{ created: number; updated: number }> {
+  const dataDir = join(DATA_DIR, "data", "bestiary");
+  const files = readJsonDir(dataDir);
+  let created = 0, updated = 0;
+
+  for (const file of files) {
+    for (const m of (file.monster || []).filter((x: any) => !x._copy)) {
+      // Extract CR — can be string, number, or {cr: "1/2", ...}
+      let cr: string | null = null;
+      if (typeof m.cr === "string") cr = m.cr;
+      else if (typeof m.cr === "number") cr = String(m.cr);
+      else if (m.cr?.cr) cr = String(m.cr.cr);
+
+      const record = {
+        name: m.name,
+        source: m.source,
+        edition: edition(m.source, m.edition),
+        cr,
+        creatureType: m.type || null,
+        size: m.size || null,
+        ac: m.ac || null,
+        hp: m.hp || null,
+        speed: m.speed || null,
+        str: m.str ?? null,
+        dex: m.dex ?? null,
+        con: m.con ?? null,
+        int: m.int ?? null,
+        wis: m.wis ?? null,
+        cha: m.cha ?? null,
+        entries: m.entries || [],
+        trait: m.trait || null,
+        actionEntries: m.action || null,
+      };
+
+      const result = await upsert("creatures", record);
+      if (result === "created") created++;
+      else updated++;
+    }
+  }
+  return { created, updated };
+}
+
+async function importVehicles(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "vehicles.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const v of (data.vehicle || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: v.name,
+      source: v.source,
+      edition: edition(v.source, v.edition),
+      vehicleType: v.vehicleType || null,
+      entries: v.entries || [],
+    };
+    const result = await upsert("vehicles", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  for (const vu of (data.vehicleUpgrade || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: vu.name,
+      source: vu.source,
+      edition: edition(vu.source, vu.edition),
+      entries: vu.entries || [],
+    };
+    const result = await upsert("vehicle_upgrades", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importDecks(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "decks.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const d of (data.deck || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: d.name,
+      source: d.source,
+      edition: edition(d.source, d.edition),
+      entries: d.entries || [],
+    };
+    const result = await upsert("decks", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  for (const c of (data.card || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: c.name,
+      source: c.source,
+      set: c.set || null,
+      edition: edition(c.source, c.edition),
+      entries: c.entries || [],
+    };
+    const result = await upsert("cards", record, ["name", "source", "set"]);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importCultsBoons(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "cultsboons.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const c of (data.cult || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: c.name,
+      source: c.source,
+      edition: edition(c.source, c.edition),
+      kind: "cult",
+      entries: c.entries || [],
+    };
+    const result = await upsert("cultsboons", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  for (const b of (data.boon || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: b.name,
+      source: b.source,
+      edition: edition(b.source, b.edition),
+      kind: "boon",
+      entries: b.entries || [],
+    };
+    const result = await upsert("cultsboons", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importRecipes(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "recipes.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const r of (data.recipe || []).filter((x: any) => !x._copy)) {
+    const record = {
+      name: r.name,
+      source: r.source,
+      edition: edition(r.source, r.edition),
+      entries: r.entries || r.instructions || [],
+    };
+    const result = await upsert("recipes", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importMagicVariants(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "magicvariants.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const v of (data.magicvariant || []).filter((x: any) => !x._copy && x.name)) {
+    const src = v.source || v.inherits?.source || "DMG";
+    const record = {
+      name: v.name,
+      source: src,
+      edition: edition(src, v.edition),
+      requires: v.requires || null,
+      entries: v.entries || v.inherits?.entries || [],
+    };
+    const result = await upsert("magicvariants", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importItemProperties(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "items-base.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const p of (data.itemProperty || []).filter((x: any) => !x._copy && x.source)) {
+    // Name comes from entries[0].name or abbreviation
+    const name = p.name || (p.entries?.[0]?.name) || p.abbreviation || null;
+    if (!name) continue;
+    const record = {
+      name,
+      abbreviation: p.abbreviation || null,
+      source: p.source,
+      edition: edition(p.source, p.edition),
+      entries: p.entries || [],
+    };
+    const result = await upsert("item_properties", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  for (const m of (data.itemMastery || []).filter((x: any) => !x._copy && x.name)) {
+    const record = {
+      name: m.name,
+      source: m.source,
+      edition: edition(m.source, m.edition),
+      entries: m.entries || [],
+    };
+    const result = await upsert("item_masteries", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  for (const t of (data.itemType || []).filter((x: any) => !x._copy && x.name)) {
+    const record = {
+      name: t.name,
+      abbreviation: t.abbreviation || null,
+      source: t.source,
+      edition: edition(t.source, t.edition),
+      entries: t.entries || [],
+    };
+    const result = await upsert("item_types", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importItemGroups(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "items.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const g of (data.itemGroup || []).filter((x: any) => !x._copy && x.name)) {
+    const record = {
+      name: g.name,
+      source: g.source,
+      edition: edition(g.source, g.edition),
+      entries: g.entries || [],
+    };
+    const result = await upsert("item_groups", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
+async function importSubraces(): Promise<{ created: number; updated: number }> {
+  const filePath = join(DATA_DIR, "data", "races.json");
+  if (!existsSync(filePath)) return { created: 0, updated: 0 };
+  const data = readJson(filePath);
+  let created = 0, updated = 0;
+
+  for (const sr of (data.subrace || []).filter((x: any) => !x._copy && x.name)) {
+    const speed =
+      typeof sr.speed === "number"
+        ? { walk: sr.speed }
+        : sr.speed ? { walk: sr.speed?.walk || 30, ...sr.speed } : { walk: 30 };
+
+    const record = {
+      name: sr.name,
+      source: sr.source,
+      edition: edition(sr.source, sr.edition),
+      isSubrace: true,
+      raceName: sr.raceName || null,
+      raceSource: sr.raceSource || null,
+      size: sr.size || null,
+      speed,
+      darkvision: sr.darkvision || 0,
+      abilityBonuses: null,
+      resistances: sr.resist?.filter((x: any) => typeof x === "string") || null,
+      immunities: sr.immune?.filter((x: any) => typeof x === "string") || null,
+      conditionImmunities: sr.conditionImmune || null,
+      skillProficiencies: null,
+      weaponProficiencies: null,
+      toolProficiencies: null,
+      languages: null,
+      traits: sr.entries || [],
+    };
+
+    const result = await upsert("races", record);
+    if (result === "created") created++;
+    else updated++;
+  }
+  return { created, updated };
+}
+
 const importers: Record<string, () => Promise<{ created: number; updated: number }>> = {
   spells: importSpells,
   classes: importClasses,
   races: importRaces,
   items: importItems,
   backgrounds: importBackgrounds,
+  feats: importFeats,
+  conditions: importConditions,
+  skills: importSkills,
+  variantrules: importVariantRules,
+  actions: importActions,
+  optionalfeatures: importOptionalFeatures,
+  senses: importSenses,
+  languages: importLanguages,
+  deities: importDeities,
+  tables_data: importTablesData,
+  rewards: importRewards,
+  trapshazards: importTrapsHazards,
+  objects: importObjects,
+  bastions: importBastions,
+  charcreationoptions: importCharCreationOptions,
+  psionics: importPsionics,
+  creatures: importCreatures,
+  vehicles: importVehicles,
+  decks: importDecks,
+  cultsboons: importCultsBoons,
+  recipes: importRecipes,
+  magicvariants: importMagicVariants,
+  item_properties: importItemProperties,
+  item_groups: importItemGroups,
+  subraces: importSubraces,
 };
 
 async function main() {

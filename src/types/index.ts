@@ -6,3 +6,4 @@ export * from './race';
 export * from './item';
 export * from './background';
 export * from './character';
+export * from './wizard';

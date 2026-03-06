@@ -57,8 +57,10 @@ export type Entry = string | EntryObject;
 export interface EntryObject {
   type: string;
   name?: string;
+  entry?: string;  // used by type: "item" (name-value pair)
   entries?: Entry[];
   items?: Entry[];
+  style?: string;
   colLabels?: string[];
   rows?: unknown[][];
   [key: string]: unknown;
