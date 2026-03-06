@@ -5,7 +5,7 @@ Full-lifecycle D&D 5e character sheet web app. Character creation, level-up, gam
 ## Tech Stack
 
 - **Frontend:** React 18 + Vite + TypeScript
-- **UI:** Mantine v7 (dark parchment theme)
+- **UI:** Mantine v8 (dark parchment theme)
 - **Forms:** React Hook Form + Zod
 - **Backend:** PocketBase (Docker, SQLite)
 - **Data:** 5e.tools JSON (seeded into PocketBase)

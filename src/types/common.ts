@@ -20,7 +20,9 @@ export type Skill =
   | 'performance' | 'persuasion' | 'religion' | 'sleight of hand'
   | 'stealth' | 'survival';
 
-export const SKILL_ABILITY: Record<Skill, import('./ability').AbilityKey> = {
+import type { AbilityKey } from './ability';
+
+export const SKILL_ABILITY: Record<Skill, AbilityKey> = {
   'acrobatics': 'dex',
   'animal handling': 'wis',
   'arcana': 'int',
