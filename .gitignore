@@ -27,6 +27,9 @@ dist-ssr
 pb_data/
 pocketbase
 
+# 5e.tools data (cloned repo)
+data/
+
 # Environment
 .env
 .env.local

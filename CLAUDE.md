@@ -20,6 +20,10 @@ pnpm exec tsc --noEmit  # Type-check
 docker compose up -d  # Start PocketBase
 docker compose down   # Stop PocketBase
 bash scripts/setup-collections.sh  # Create PocketBase collections (run once)
+
+pnpm run import                    # Import 5e.tools data (clones repo on first run)
+pnpm run import -- --update        # Pull latest 5e.tools data and re-import
+pnpm run import -- --only spells   # Import specific collection(s)
 ```
 
 ## Project Structure
