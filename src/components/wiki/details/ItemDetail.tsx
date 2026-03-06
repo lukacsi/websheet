@@ -1,14 +1,22 @@
-import { Stack, Text, Group, Badge, Divider } from '@mantine/core';
+import { Stack, Text, Group, Badge, Divider, List } from '@mantine/core';
 import type { Item } from '@/types/item';
 import { EntryRenderer } from '@/components/create/EntryRenderer';
+import { WikiLink } from '@/components/wiki/WikiLink';
 import type { Entry } from '@/types/common';
 
 interface Props {
   data: Record<string, unknown>;
 }
 
+/** Parse an item ref like "Bagpipes|XPHB" into {name, source} */
+function parseItemRef(ref: string): { name: string; source?: string } {
+  const [name, source] = ref.split('|');
+  return { name, source };
+}
+
 export function ItemDetail({ data }: Props) {
   const item = data as unknown as Item;
+  const groupItems = data.items as string[] | undefined;
 
   const attunement = item.requiresAttunement
     ? typeof item.requiresAttunement === 'string'
@@ -50,6 +58,23 @@ export function ItemDetail({ data }: Props) {
       )}
       {item.stealthDisadvantage && (
         <Text size="sm" c="dimmed">Stealth disadvantage</Text>
+      )}
+
+      {/* Item group: list of member items as clickable links */}
+      {groupItems && groupItems.length > 0 && (
+        <>
+          <Text size="sm" fw={600}>Items</Text>
+          <List size="sm" spacing={4}>
+            {groupItems.map(ref => {
+              const { name, source } = parseItemRef(ref);
+              return (
+                <List.Item key={ref}>
+                  <WikiLink tagType="item" name={name} source={source} displayText={name} />
+                </List.Item>
+              );
+            })}
+          </List>
+        </>
       )}
 
       {item.entries?.length > 0 && (

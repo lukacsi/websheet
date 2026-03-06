@@ -1,6 +1,11 @@
 import type { EntityTagType } from '@/utils/parse-tags';
 import pb from './pocketbase';
 
+/** Fallback collections to try when primary lookup misses (e.g. @item can be an itemGroup) */
+const COLLECTION_FALLBACKS: Partial<Record<EntityTagType, string[]>> = {
+  item: ['item_groups'],
+};
+
 const COLLECTION_MAP: Record<EntityTagType, string | null> = {
   spell: 'spells',
   item: 'items',
@@ -65,10 +70,28 @@ export async function lookupEntity(
       filter,
       sort: source ? undefined : '-edition',
     });
-    return records.items[0] as unknown as Record<string, unknown> ?? null;
+    if (records.items[0]) return records.items[0] as unknown as Record<string, unknown>;
   } catch {
-    return null;
+    // primary lookup failed
   }
+
+  // Try fallback collections (e.g. @item → item_groups)
+  const fallbacks = COLLECTION_FALLBACKS[tagType];
+  if (fallbacks) {
+    for (const fb of fallbacks) {
+      try {
+        const records = await pb.collection(fb).getList(1, 1, {
+          filter,
+          sort: source ? undefined : '-edition',
+        });
+        if (records.items[0]) return records.items[0] as unknown as Record<string, unknown>;
+      } catch {
+        // fallback failed
+      }
+    }
+  }
+
+  return null;
 }
 
 /** Fetch all class features for a given class, sorted by level */

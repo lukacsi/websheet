@@ -11,6 +11,7 @@ export interface WizardFormData {
 
   // Step 1: Class
   classId: string;
+  level: number;
   chosenSkills: Skill[];
 
   // Step 2: Background
@@ -44,6 +45,7 @@ export const wizardSchema = z.object({
   playerName: z.string().max(100).default(''),
 
   classId: z.string().min(1, 'Class is required'),
+  level: z.number().min(1).max(20),
   chosenSkills: z.array(z.string()).min(1, 'Choose at least one skill'),
 
   backgroundId: z.string().min(1, 'Background is required'),
@@ -65,7 +67,7 @@ export const wizardSchema = z.object({
 /** Fields to validate per wizard step */
 export const STEP_FIELDS: (keyof WizardFormData)[][] = [
   ['name'],                                              // Step 0: Basics
-  ['classId', 'chosenSkills'],                           // Step 1: Class
+  ['classId', 'level', 'chosenSkills'],                   // Step 1: Class
   ['backgroundId'],                                      // Step 2: Background
   ['raceId'],                                            // Step 3: Species
   ['abilityMethod', 'baseAbilities'],                    // Step 4: Ability Scores
@@ -76,6 +78,7 @@ export const WIZARD_DEFAULTS: WizardFormData = {
   name: '',
   playerName: '',
   classId: '',
+  level: 1,
   chosenSkills: [],
   backgroundId: '',
   backgroundBonusMode: '+2/+1',

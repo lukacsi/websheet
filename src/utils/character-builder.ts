@@ -5,9 +5,9 @@ import type { Class } from '@/types';
 import type { Background } from '@/types';
 import { finalAbilities } from './derived-stats';
 import {
-  calculateHp,
   calculateAc,
   calculateInitiative,
+  proficiencyBonus,
 } from './derived-stats';
 import { hashPassphrase } from './passphrase';
 
@@ -18,8 +18,16 @@ interface BuildInput {
   background: Background & { id: string };
 }
 
+/** HP at a given level: hitDie max + (level-1) * avg(hitDie) + level * CON mod */
+function calculateMultiLevelHp(hitDie: number, conScore: number, level: number): number {
+  const conMod = Math.floor((conScore - 10) / 2);
+  const avgRoll = Math.floor(hitDie / 2) + 1;
+  return Math.max(1, hitDie + (level - 1) * avgRoll + level * conMod);
+}
+
 /** Build a Character object from wizard form data + fetched entities */
 export async function buildCharacter({ form, race, cls, background }: BuildInput): Promise<Character> {
+  const level = form.level;
   // 2024 rules: ability bonuses come from background, not race
   const abilities = finalAbilities(form.baseAbilities, form.backgroundBonuses, {});
   const passphraseHash = await hashPassphrase(form.passphrase);
@@ -32,6 +40,9 @@ export async function buildCharacter({ form, race, cls, background }: BuildInput
 
   // Deduplicate
   const uniqueSkills = [...new Set(skillProficiencies)];
+
+  const hp = calculateMultiLevelHp(cls.hitDie, abilities.con, level);
+  const slotRow = cls.spellSlotProgression?.[level - 1] ?? [];
 
   return {
     name: form.name,
@@ -46,19 +57,19 @@ export async function buildCharacter({ form, race, cls, background }: BuildInput
     classes: [{
       classId: cls.id,
       className: cls.name,
-      level: 1,
+      level,
     }],
 
     abilities,
-    hp: calculateHp(cls.hitDie, abilities.con),
-    maxHp: calculateHp(cls.hitDie, abilities.con),
+    hp,
+    maxHp: hp,
     tempHp: 0,
     ac: calculateAc(abilities.dex),
     speed: { ...race.speed },
     initiative: calculateInitiative(abilities.dex),
-    proficiencyBonus: 2,
+    proficiencyBonus: proficiencyBonus(level),
     deathSaves: { successes: 0, failures: 0 },
-    hitDice: [{ die: cls.hitDie, total: 1, used: 0 }],
+    hitDice: [{ die: cls.hitDie, total: level, used: 0 }],
     conditions: [],
 
     savingThrowProficiencies: [...cls.savingThrows],
@@ -74,8 +85,8 @@ export async function buildCharacter({ form, race, cls, background }: BuildInput
 
     spellcastingAbility: cls.spellcastingAbility ?? undefined,
     spellSlots: {
-      max: cls.spellSlotProgression?.[0] ?? [],
-      used: (cls.spellSlotProgression?.[0] ?? []).map(() => 0),
+      max: slotRow,
+      used: slotRow.map(() => 0),
     },
     spells: [],
 
@@ -86,7 +97,7 @@ export async function buildCharacter({ form, race, cls, background }: BuildInput
     featureIds: [],
     resources: [],
 
-    level: 1,
+    level,
     inspiration: false,
     notes: '',
   };

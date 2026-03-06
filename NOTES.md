@@ -1,5 +1,23 @@
 # Notes — WebSheet
 
+## 2026-03-06 — _copy resolution, level selector, complete data import
+
+**Context:** ~1,440 entities (mainly subclasses, monsters, items) were skipped during import due to 5e.tools `_copy` templating mechanism. Creator needed level selector for multi-level characters.
+
+**Decisions:**
+- Built generic `resolveCopy` engine handling all `_mod` operations (replaceArr, appendArr, removeArr, insertArr, replaceTxt, setProp, etc.)
+- Iterative chain resolution (max depth 3 in practice, 315 chains found)
+- Cross-file resolution for directory-based data (spells, classes, bestiary)
+- Subclass upsert key changed from name+source to name+source+className+classSource (124 pairs collided)
+- Item `@item` tag now falls back to `item_groups` collection
+- Level selector uses NumberInput (1-20), inline progression table shows only selected levels
+
+**Done:**
+- 1,438 new entities imported (total PB: 14,709 across 36 collections)
+- StepClass restructured: class+level selectors, progression table, expanded features inline
+- Character builder: multi-level HP, proficiency bonus, hit dice, spell slots
+- Item groups now store `items` list, rendered as clickable WikiLinks
+
 ## 2026-03-06 — 5e.tools data importer complete, Phase 1 done
 
 **Context:** Needed to seed PocketBase with D&D 5e data from 5e.tools for character creation and gameplay.
