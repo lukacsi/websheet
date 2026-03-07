@@ -5,6 +5,7 @@ import { ClassDetail } from './details/ClassDetail';
 import { ClassFeatureDetail } from './details/ClassFeatureDetail';
 import { RaceDetail } from './details/RaceDetail';
 import { BackgroundDetail } from './details/BackgroundDetail';
+import { CreatureDetail } from './details/CreatureDetail';
 import { FallbackDetail } from './details/FallbackDetail';
 
 interface Props {
@@ -27,6 +28,8 @@ export function EntityDetailView({ tagType, data }: Props) {
       return <RaceDetail data={data} />;
     case 'background':
       return <BackgroundDetail data={data} />;
+    case 'creature':
+      return <CreatureDetail data={data} />;
     default:
       return <FallbackDetail tagType={tagType} data={data} />;
   }

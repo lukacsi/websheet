@@ -109,3 +109,20 @@ export async function fetchClassFeatures(
     return [];
   }
 }
+
+/** Fetch subclass features for a given subclass, sorted by level */
+export async function fetchSubclassFeatures(
+  className: string,
+  classSource: string,
+  subclassShortName: string,
+): Promise<Record<string, unknown>[]> {
+  try {
+    const records = await pb.collection('class_features').getFullList({
+      filter: `className="${escapeFilter(className)}" && classSource="${escapeFilter(classSource)}" && subclassName="${escapeFilter(subclassShortName)}" && isSubclassFeature=true`,
+      sort: 'level,name',
+    });
+    return records as unknown as Record<string, unknown>[];
+  } catch {
+    return [];
+  }
+}

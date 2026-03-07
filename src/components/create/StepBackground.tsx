@@ -8,6 +8,8 @@ import { EntryRenderer } from './EntryRenderer';
 import { BackgroundBonusPicker } from './BackgroundBonusPicker';
 import { TaggedText } from '@/components/wiki/TaggedText';
 import { parseBackgroundAbilities } from '@/utils/parse-background-abilities';
+import { ToolProficiencyPicker } from './ToolProficiencyPicker';
+import { LanguagePicker } from './LanguagePicker';
 
 /** Parse feat strings like "tireless reveler|abh" → "Tireless Reveler" */
 function formatFeat(feat: string): string {
@@ -24,6 +26,8 @@ export function StepBackground() {
   const backgroundId = watch('backgroundId');
   const bonusMode = watch('backgroundBonusMode');
   const bonuses = watch('backgroundBonuses');
+  const chosenBackgroundTools = watch('chosenBackgroundTools');
+  const chosenBackgroundLanguages = watch('chosenBackgroundLanguages');
 
   const { backgrounds, loading } = useBackgrounds();
   const { background } = useBackground(backgroundId || undefined);
@@ -39,6 +43,8 @@ export function StepBackground() {
     setValue('backgroundId', id ?? '');
     setValue('backgroundBonusMode', '+2/+1');
     setValue('backgroundBonuses', {});
+    setValue('chosenBackgroundTools', []);
+    setValue('chosenBackgroundLanguages', []);
   }
 
   return (
@@ -92,12 +98,31 @@ export function StepBackground() {
             </Group>
           )}
 
+          {/* Tool proficiency choices */}
+          {background.toolChoices && background.toolChoices.length > 0 && (
+            <ToolProficiencyPicker
+              choices={background.toolChoices}
+              chosen={chosenBackgroundTools}
+              onChange={t => setValue('chosenBackgroundTools', t)}
+            />
+          )}
+
           {/* Languages */}
           {background.languages && background.languages.length > 0 && (
             <Group gap="xs">
               <Text size="sm" fw={500}>Languages:</Text>
               <Text size="sm">{background.languages.join(', ')}</Text>
             </Group>
+          )}
+
+          {/* Language choices */}
+          {background.languageChoices && background.languageChoices.length > 0 && (
+            <LanguagePicker
+              choices={background.languageChoices}
+              chosen={chosenBackgroundLanguages}
+              onChange={l => setValue('chosenBackgroundLanguages', l)}
+              alreadyKnown={background.languages ?? []}
+            />
           )}
 
           {/* Feats */}

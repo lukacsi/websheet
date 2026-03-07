@@ -1,4 +1,4 @@
-import type { Edition, Entry, Skill } from './common';
+import type { Edition, Entry, Skill, ProfChoice } from './common';
 import type { AbilityKey } from './ability';
 
 export type CasterProgression = 'full' | '1/2' | '1/3' | 'pact' | 'artificer' | null;
@@ -40,6 +40,7 @@ export interface Class {
   armorProficiencies: string[];
   weaponProficiencies: string[];
   toolProficiencies: string[];
+  toolChoices?: ProfChoice[];
   skillChoices: { from: Skill[]; count: number };
   startingEquipment: Entry[];
   classFeatures: string[];

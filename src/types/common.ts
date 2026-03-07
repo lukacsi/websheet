@@ -71,3 +71,22 @@ export interface SourceRef {
   source: string;
   page?: number;
 }
+
+/** Structured tool proficiency choice from 5e.tools data */
+export interface ProfChoice {
+  type: 'anyArtisansTool' | 'anyMusicalInstrument' | 'anyGamingSet' | 'specific';
+  count: number;
+  from?: string[];
+}
+
+/** Structured language choice from 5e.tools data */
+export interface LangChoice {
+  type: 'anyStandard' | 'any' | 'specific';
+  count: number;
+  from?: string[];
+}
+
+/** Resistance choice (e.g. classic Dragonborn choosing damage type) */
+export interface ResistanceChoice {
+  from: DamageType[];
+}

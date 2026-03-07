@@ -109,6 +109,7 @@ export interface Character {
 
   // Features & resources
   featureIds: string[];
+  featureChoices: Record<string, string[]>;
   resources: TrackedResource[];
 
   // Meta

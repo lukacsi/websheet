@@ -1,4 +1,4 @@
-import { Container, Title, Text, SimpleGrid, Card, Group, Button } from '@mantine/core';
+import { Container, Title, Text, SimpleGrid, Card, Button } from '@mantine/core';
 import { Link } from 'react-router-dom';
 
 export function Home() {
@@ -11,7 +11,7 @@ export function Home() {
         D&D 5e Character Manager
       </Text>
 
-      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
+      <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg">
         <Card
           shadow="sm"
           padding="lg"
@@ -20,12 +20,29 @@ export function Home() {
             border: '1px solid var(--mantine-color-dark-5)',
           }}
         >
-          <Title order={3} mb="sm">Create Character</Title>
+          <Title order={3} mb="sm">Guided Create</Title>
           <Text c="dimmed" mb="md">
-            Build a new character from scratch — choose race, class, background, and abilities.
+            Step-by-step wizard — pick race, class, background, and abilities with guidance.
           </Text>
           <Button component={Link} to="/create" variant="filled">
-            New Character
+            Wizard
+          </Button>
+        </Card>
+
+        <Card
+          shadow="sm"
+          padding="lg"
+          style={{
+            backgroundColor: 'var(--mantine-color-dark-7)',
+            border: '1px solid var(--mantine-color-dark-5)',
+          }}
+        >
+          <Title order={3} mb="sm">Quick Create</Title>
+          <Text c="dimmed" mb="md">
+            Blank character sheet — fill in whatever you want, no rules enforced.
+          </Text>
+          <Button component={Link} to="/character/new" variant="light">
+            Blank Sheet
           </Button>
         </Card>
 
@@ -41,11 +58,9 @@ export function Home() {
           <Text c="dimmed" mb="md">
             Open an existing character sheet by name and passphrase.
           </Text>
-          <Group>
-            <Button component={Link} to="/load" variant="light">
-              Load Character
-            </Button>
-          </Group>
+          <Button component={Link} to="/load" variant="light">
+            Load Character
+          </Button>
         </Card>
       </SimpleGrid>
     </Container>

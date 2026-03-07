@@ -1,5 +1,44 @@
 # Notes — WebSheet
 
+## 2026-03-07 — Sandbox character sheet page
+
+**Context:** Needed a character sheet page that works as a sandbox — all fields editable, no rule enforcement, but with auto-calculated modifiers and full wiki integration. Also needed manual character creation without the wizard.
+
+**Decisions:**
+- React state (not React Hook Form) for live-editing sheet, debounced auto-save to PB
+- `/character/new` for blank sheet creation, `/character/:id` for editing — same component detects mode
+- PB-backed searchable Selects for race/class/background with auto-populate of proficiencies, languages, speed, hit dice, spellcasting ability on selection
+- WikiLinks on skills, conditions, tools, languages, spells, items, race/class/background — clicking opens entity detail drawer
+- Short Rest resets short-rest resources; Long Rest restores HP, spell slots, hit dice (half level), clears conditions/death saves, resets all resources
+- Subraces shown in race dropdown as separate "Lineages" entries (stored as subraceId/subraceName)
+
+**Done:**
+- 13 section components in `src/components/sheet/`
+- Full character sheet: abilities (6 scores + mods), combat (HP/AC/init/speed/level), saving throws, skills (prof + expertise), spellcasting (ability/DC/attack/slots), spells (searchable PB picker, grouped by level), inventory (PB search + custom), currency, resources (tracked with reset triggers), proficiencies & languages, conditions, death saves, hit dice, notes
+- Home page: 3 cards (Guided Create, Quick Create, Load)
+- `updateRecord` added to PB API, `useSpells` and `useItems` hooks
+- Fixed production build issues (strict tsconfig)
+
+## 2026-03-06 — Character creation choices, creature stat blocks, WikiLink fix
+
+**Context:** Many 5e.tools choice points were lost during import — class tool choices were just text, background language choices dropped, race resistance choices lost, creature tags showed no stat block. WikiLink clicks not working in wizard feature entries.
+
+**Decisions:**
+- Class tool proficiencies are raw text strings (not structured objects like backgrounds/races) — parse with regex after stripping `{@item}` tags, handle "or" patterns (Monk) by emitting both types with count 1
+- Background/race tool/language/resistance choices use structured `choose`/`anyStandard`/`anyArtisansTool` objects — parse directly
+- Creature stat block uses standard D&D layout with red dividers, ability score grid, conditional sections
+- WikiLink click handler moved from Anchor inside HoverCard.Target to outer wrapper span — HoverCard.Target was interfering with click event propagation
+
+**Done:**
+- PB migration adding choice fields to classes/backgrounds/races, featureChoices to characters, 12 stat block fields to creatures
+- Import script: `parseProfChoices()`, `parseProfChoicesFromText()`, `parseLanguageChoices()` + creature stat fields
+- 3 new picker components: ToolProficiencyPicker (queries PB items), LanguagePicker (queries PB languages), ResistancePicker
+- 5 new wizard form fields with schema validation, step field mapping, defaults
+- Pickers integrated into StepClass, StepBackground, StepRace with reset-on-change
+- Character builder merges chosen tools/languages into character record
+- CreatureDetail.tsx: full stat block (AC, HP, speed, abilities, saves, skills, DR/DI/DV, CI, senses, CR/XP, traits, actions, bonus/reactions/legendary)
+- WikiLink click fix for all entity links
+
 ## 2026-03-06 — _copy resolution, level selector, complete data import
 
 **Context:** ~1,440 entities (mainly subclasses, monsters, items) were skipped during import due to 5e.tools `_copy` templating mechanism. Creator needed level selector for multi-level characters.

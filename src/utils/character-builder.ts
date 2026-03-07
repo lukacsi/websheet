@@ -3,6 +3,7 @@ import type { WizardFormData } from '@/types/wizard';
 import type { Race } from '@/types';
 import type { Class } from '@/types';
 import type { Background } from '@/types';
+import type { Subclass } from '@/types/class';
 import { finalAbilities } from './derived-stats';
 import {
   calculateAc,
@@ -16,6 +17,7 @@ interface BuildInput {
   race: Race & { id: string };
   cls: Class & { id: string };
   background: Background & { id: string };
+  subclass?: Subclass & { id: string };
 }
 
 /** HP at a given level: hitDie max + (level-1) * avg(hitDie) + level * CON mod */
@@ -26,7 +28,7 @@ function calculateMultiLevelHp(hitDie: number, conScore: number, level: number):
 }
 
 /** Build a Character object from wizard form data + fetched entities */
-export async function buildCharacter({ form, race, cls, background }: BuildInput): Promise<Character> {
+export async function buildCharacter({ form, race, cls, background, subclass }: BuildInput): Promise<Character> {
   const level = form.level;
   // 2024 rules: ability bonuses come from background, not race
   const abilities = finalAbilities(form.baseAbilities, form.backgroundBonuses, {});
@@ -57,6 +59,8 @@ export async function buildCharacter({ form, race, cls, background }: BuildInput
     classes: [{
       classId: cls.id,
       className: cls.name,
+      subclassId: subclass?.id,
+      subclassName: subclass?.name,
       level,
     }],
 
@@ -80,8 +84,15 @@ export async function buildCharacter({ form, race, cls, background }: BuildInput
     toolProficiencies: [
       ...(cls.toolProficiencies ?? []),
       ...(background.toolProficiencies ?? []),
+      ...(form.chosenClassTools ?? []),
+      ...(form.chosenBackgroundTools ?? []),
     ],
-    languages: [...(race.languages ?? []), ...(background.languages ?? [])],
+    languages: [
+      ...(race.languages ?? []),
+      ...(background.languages ?? []),
+      ...(form.chosenRaceLanguages ?? []),
+      ...(form.chosenBackgroundLanguages ?? []),
+    ],
 
     spellcastingAbility: cls.spellcastingAbility ?? undefined,
     spellSlots: {
@@ -95,6 +106,7 @@ export async function buildCharacter({ form, race, cls, background }: BuildInput
     attunementSlots: 3,
 
     featureIds: [],
+    featureChoices: form.featureChoices ?? {},
     resources: [],
 
     level,

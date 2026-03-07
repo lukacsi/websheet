@@ -34,3 +34,13 @@ export async function createRecord<T = RecordModel>(
   const record = await pb.collection(collection).create(data);
   return record as unknown as T;
 }
+
+/** Update an existing record */
+export async function updateRecord<T = RecordModel>(
+  collection: string,
+  id: string,
+  data: Record<string, unknown>,
+): Promise<T> {
+  const record = await pb.collection(collection).update(id, data);
+  return record as unknown as T;
+}

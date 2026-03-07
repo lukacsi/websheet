@@ -1,4 +1,4 @@
-import type { Edition, Entry, Size, Speed, DamageType, Condition } from './common';
+import type { Edition, Entry, Size, Speed, DamageType, Condition, ProfChoice, LangChoice, ResistanceChoice } from './common';
 import type { AbilityKey } from './ability';
 
 export interface AbilityBonus {
@@ -21,7 +21,10 @@ export interface Race {
   skillProficiencies?: string[];
   weaponProficiencies?: string[];
   toolProficiencies?: string[];
+  toolChoices?: ProfChoice[];
   languages: string[];
+  languageChoices?: LangChoice[];
+  resistanceChoices?: ResistanceChoice[];
   traits: Entry[];
   subraces?: Subrace[];
 }

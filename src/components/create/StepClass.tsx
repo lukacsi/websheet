@@ -5,13 +5,15 @@ import type { WizardFormData } from '@/types/wizard';
 import type { Skill, AbilityKey, Entry } from '@/types';
 import type { ClassFeature } from '@/types/class';
 import { ABILITY_NAMES } from '@/types';
-import { useClasses, useClass } from '@/hooks/useClasses';
+import { useClasses, useClass, useSubclasses } from '@/hooks/useClasses';
 import { EntityCard } from './EntityCard';
 import { EntryRenderer } from './EntryRenderer';
 import { SkillPicker } from './SkillPicker';
 import { stripTags } from '@/utils/strip-tags';
 import { TaggedText } from '@/components/wiki/TaggedText';
-import { fetchClassFeatures } from '@/api/wiki';
+import { fetchClassFeatures, fetchSubclassFeatures } from '@/api/wiki';
+import { FeatureChoicePicker, findOptionsBlocks, stripOptionsEntries } from './FeatureChoicePicker';
+import { ToolProficiencyPicker } from './ToolProficiencyPicker';
 
 /** primaryAbility can be AbilityKey[] or [{dex: true, wis: true}] from PocketBase */
 function parsePrimaryAbilities(primaryAbility: unknown): string[] {
@@ -80,13 +82,18 @@ interface TableGroup {
 export function StepClass() {
   const { setValue, watch, formState: { errors } } = useFormContext<WizardFormData>();
   const classId = watch('classId');
+  const subclassId = watch('subclassId');
   const level = watch('level');
   const chosenSkills = watch('chosenSkills');
+  const chosenClassTools = watch('chosenClassTools');
+  const featureChoices = watch('featureChoices');
 
   const { classes, loading } = useClasses();
   const { cls } = useClass(classId || undefined);
+  const { subclasses } = useSubclasses(cls?.name, cls?.source);
 
   const [features, setFeatures] = useState<ClassFeature[]>([]);
+  const [subclassFeatures, setSubclassFeatures] = useState<ClassFeature[]>([]);
   const [loadingFeatures, setLoadingFeatures] = useState(false);
 
   useEffect(() => {
@@ -97,6 +104,14 @@ export function StepClass() {
       .finally(() => setLoadingFeatures(false));
   }, [cls?.name, cls?.source]);
 
+  // Fetch subclass features when subclass is selected
+  const selectedSubclass = subclasses.find(sc => sc.id === subclassId);
+  useEffect(() => {
+    if (!cls || !selectedSubclass) { setSubclassFeatures([]); return; }
+    fetchSubclassFeatures(cls.name, cls.source, selectedSubclass.shortName)
+      .then(f => setSubclassFeatures(f as unknown as ClassFeature[]));
+  }, [cls?.name, cls?.source, selectedSubclass?.shortName]);
+
   const selectData = classes.map(c => ({
     value: c.id,
     label: `${c.name} (${c.source})`,
@@ -104,7 +119,10 @@ export function StepClass() {
 
   function handleClassChange(id: string | null) {
     setValue('classId', id ?? '');
+    setValue('subclassId', '');
     setValue('chosenSkills', []);
+    setValue('chosenClassTools', []);
+    setValue('featureChoices', {});
   }
 
   const badges: string[] = [];
@@ -128,10 +146,29 @@ export function StepClass() {
     byLevel.set(ref.level, arr);
   }
 
+  // Detect subclass gain level (first feature ref with gainSubclassFeature)
+  const subclassLevel = featureRefs.find(r => r.isSubclass)?.level ?? 3;
+  const needsSubclass = level >= subclassLevel;
+
+  // Subclass select data
+  const subclassSelectData = subclasses.map(sc => ({
+    value: sc.id,
+    label: `${sc.name} (${sc.source})`,
+  }));
+
   // Build feature name → ClassFeature map
   const featureMap = new Map<string, ClassFeature>();
   for (const f of features) {
     featureMap.set(f.name, f);
+  }
+
+  // Group subclass features by level
+  const subclassFeaturesByLevel = new Map<number, ClassFeature[]>();
+  for (const f of subclassFeatures) {
+    const lvl = (f as unknown as { level: number }).level;
+    const arr = subclassFeaturesByLevel.get(lvl) ?? [];
+    arr.push(f);
+    subclassFeaturesByLevel.set(lvl, arr);
   }
 
   // Parse classTableGroups for extra columns
@@ -155,7 +192,7 @@ export function StepClass() {
 
   return (
     <Stack gap="md">
-      {/* Row 1: Class selector + Level input */}
+      {/* Row 1: Class selector + Level input + Subclass */}
       <Group grow align="flex-start">
         {loading ? (
           <Loader size="sm" />
@@ -240,7 +277,36 @@ export function StepClass() {
             </>
           )}
 
-          {/* Row 4: Progression table (levels 1..selected) */}
+          {/* Tool proficiency picker */}
+          {cls.toolChoices && cls.toolChoices.length > 0 && (
+            <>
+              <Divider color="dark.4" />
+              <ToolProficiencyPicker
+                choices={cls.toolChoices}
+                chosen={chosenClassTools}
+                onChange={t => setValue('chosenClassTools', t)}
+              />
+            </>
+          )}
+
+          {/* Row 4: Subclass selector */}
+          {needsSubclass && (
+            <>
+              <Divider color="dark.4" />
+              <Select
+                label={cls.subclassTitle || 'Subclass'}
+                placeholder={`Choose a ${cls.subclassTitle?.toLowerCase() || 'subclass'}...`}
+                data={subclassSelectData}
+                value={subclassId || null}
+                onChange={v => setValue('subclassId', v ?? '')}
+                searchable
+                clearable
+                error={errors.subclassId?.message}
+              />
+            </>
+          )}
+
+          {/* Row 5: Progression table (levels 1..selected) */}
           <Divider color="dark.4" />
           <Text size="sm" fw={700}>Class Progression (Levels 1–{level})</Text>
           <ScrollArea>
@@ -289,12 +355,18 @@ export function StepClass() {
             <Loader size="sm" mx="auto" />
           ) : (
             Array.from({ length: level }, (_, i) => i + 1).map(lvl => {
-              const levelRefs = byLevel.get(lvl)?.filter(r => !r.isSubclass) ?? [];
-              if (levelRefs.length === 0) return null;
+              const classRefs = byLevel.get(lvl)?.filter(r => !r.isSubclass) ?? [];
+              const scFeatures = selectedSubclass
+                ? subclassFeaturesByLevel.get(lvl) ?? []
+                : [];
+              if (classRefs.length === 0 && scFeatures.length === 0) return null;
               return (
                 <Stack key={lvl} gap="sm">
-                  {levelRefs.map(ref => {
+                  {classRefs.map(ref => {
                     const feature = featureMap.get(ref.name);
+                    const featureEntries = feature?.entries as Entry[] | undefined;
+                    const hasOptions = featureEntries ? findOptionsBlocks(ref.name, featureEntries).length > 0 : false;
+                    const displayEntries = hasOptions && featureEntries ? stripOptionsEntries(featureEntries) : featureEntries;
                     return (
                       <Stack key={ref.name} gap="xs">
                         <Group justify="space-between" align="baseline">
@@ -303,8 +375,48 @@ export function StepClass() {
                           </Title>
                           <Text size="xs" c="dimmed">{cls.source}</Text>
                         </Group>
-                        {feature?.entries?.length ? (
-                          <EntryRenderer entries={feature.entries as Entry[]} />
+                        {featureEntries?.length ? (
+                          <>
+                            {displayEntries?.length ? <EntryRenderer entries={displayEntries} /> : null}
+                            {hasOptions && (
+                              <FeatureChoicePicker
+                                featureName={ref.name}
+                                entries={featureEntries}
+                                selected={featureChoices[ref.name] ?? []}
+                                onChange={sel => setValue('featureChoices', { ...featureChoices, [ref.name]: sel })}
+                              />
+                            )}
+                          </>
+                        ) : (
+                          <Text size="sm" c="dimmed">Details not available.</Text>
+                        )}
+                      </Stack>
+                    );
+                  })}
+                  {scFeatures.map(feature => {
+                    const featureEntries = feature.entries as Entry[] | undefined;
+                    const hasOptions = featureEntries ? findOptionsBlocks(feature.name, featureEntries).length > 0 : false;
+                    const displayEntries = hasOptions && featureEntries ? stripOptionsEntries(featureEntries) : featureEntries;
+                    return (
+                      <Stack key={`sc-${feature.name}`} gap="xs">
+                        <Group justify="space-between" align="baseline">
+                          <Title order={5} c="grape">
+                            Level {lvl}: {feature.name}
+                          </Title>
+                          <Text size="xs" c="dimmed">{selectedSubclass?.source}</Text>
+                        </Group>
+                        {featureEntries?.length ? (
+                          <>
+                            {displayEntries?.length ? <EntryRenderer entries={displayEntries} /> : null}
+                            {hasOptions && (
+                              <FeatureChoicePicker
+                                featureName={feature.name}
+                                entries={featureEntries}
+                                selected={featureChoices[feature.name] ?? []}
+                                onChange={sel => setValue('featureChoices', { ...featureChoices, [feature.name]: sel })}
+                              />
+                            )}
+                          </>
                         ) : (
                           <Text size="sm" c="dimmed">Details not available.</Text>
                         )}

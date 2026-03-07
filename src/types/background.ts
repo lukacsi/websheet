@@ -1,4 +1,4 @@
-import type { Edition, Entry } from './common';
+import type { Edition, Entry, ProfChoice, LangChoice } from './common';
 
 export interface Background {
   id?: string;
@@ -7,7 +7,9 @@ export interface Background {
   edition?: Edition;
   skillProficiencies: string[];
   toolProficiencies?: string[];
+  toolChoices?: ProfChoice[];
   languages?: string[];
+  languageChoices?: LangChoice[];
   startingEquipment: Entry[];
   feats?: string[];
   feature?: {

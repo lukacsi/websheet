@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { createRecord } from '@/api/pocketbase';
 import { buildCharacter } from '@/utils/character-builder';
 import { getRace } from '@/api/races';
-import { getClass } from '@/api/classes';
+import { getClass, getSubclass } from '@/api/classes';
 import { getBackground } from '@/api/backgrounds';
 import type { WizardFormData } from '@/types/wizard';
 import type { Character } from '@/types';
@@ -15,13 +15,14 @@ export function useCreateCharacter() {
     setSaving(true);
     setError(null);
     try {
-      const [race, cls, background] = await Promise.all([
+      const [race, cls, background, subclass] = await Promise.all([
         getRace(form.raceId),
         getClass(form.classId),
         getBackground(form.backgroundId),
+        form.subclassId ? getSubclass(form.subclassId) : undefined,
       ]);
 
-      const character = await buildCharacter({ form, race, cls, background });
+      const character = await buildCharacter({ form, race, cls, background, subclass });
       const saved = await createRecord<Character>('characters', character as unknown as Record<string, unknown>);
       return saved;
     } catch (err) {

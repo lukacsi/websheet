@@ -3,10 +3,14 @@ import { useFormContext } from 'react-hook-form';
 import type { WizardFormData } from '@/types/wizard';
 import { useRaces, useRace } from '@/hooks/useRaces';
 import { EntityCard } from './EntityCard';
+import { ResistancePicker } from './ResistancePicker';
+import { LanguagePicker } from './LanguagePicker';
 
 export function StepRace() {
   const { setValue, watch, formState: { errors } } = useFormContext<WizardFormData>();
   const raceId = watch('raceId');
+  const chosenRaceLanguages = watch('chosenRaceLanguages');
+  const chosenResistance = watch('chosenResistance');
 
   const { races, loading } = useRaces();
   const { race } = useRace(raceId || undefined);
@@ -18,6 +22,8 @@ export function StepRace() {
 
   function handleRaceChange(id: string | null) {
     setValue('raceId', id ?? '');
+    setValue('chosenRaceLanguages', []);
+    setValue('chosenResistance', '');
   }
 
   const badges: string[] = [];
@@ -65,6 +71,25 @@ export function StepRace() {
               <Text size="sm" fw={500}>Skill Proficiencies:</Text>
               <Text size="sm">{race.skillProficiencies.join(', ')}</Text>
             </Group>
+          )}
+
+          {/* Resistance choices */}
+          {race.resistanceChoices && race.resistanceChoices.length > 0 && (
+            <ResistancePicker
+              choices={race.resistanceChoices}
+              chosen={chosenResistance}
+              onChange={r => setValue('chosenResistance', r)}
+            />
+          )}
+
+          {/* Language choices */}
+          {race.languageChoices && race.languageChoices.length > 0 && (
+            <LanguagePicker
+              choices={race.languageChoices}
+              chosen={chosenRaceLanguages}
+              onChange={l => setValue('chosenRaceLanguages', l)}
+              alreadyKnown={race.languages ?? []}
+            />
           )}
         </EntityCard>
       )}

@@ -78,7 +78,7 @@ function HoverPreview({ tagType, name, source }: { tagType: EntityTagType; name:
     <Stack gap={4} maw={360}>
       <Group gap="xs">
         <Text size="sm" fw={700}>{data.name as string}</Text>
-        {data.source && <Badge size="xs" variant="outline">{data.source as string}</Badge>}
+        {typeof data.source === 'string' && <Badge size="xs" variant="outline">{data.source}</Badge>}
       </Group>
       {preview && preview.length > 0 && (
         <EntryRenderer entries={preview} />
@@ -93,35 +93,44 @@ function HoverPreview({ tagType, name, source }: { tagType: EntityTagType; name:
 export function WikiLink({ tagType, name, source, displayText }: WikiLinkProps) {
   const { open } = useWikiDrawer();
 
+  function handleClick(e: React.MouseEvent) {
+    e.stopPropagation();
+    e.preventDefault();
+    open({ tagType, name, source });
+  }
+
   return (
-    <HoverCard
-      width="auto"
-      shadow="md"
-      openDelay={400}
-      closeDelay={100}
-      position="bottom-start"
-      withinPortal
+    <span
+      role="button"
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={(e) => { if (e.key === 'Enter') handleClick(e as unknown as React.MouseEvent); }}
+      style={{ cursor: 'pointer' }}
     >
-      <HoverCard.Target>
-        <Anchor
-          component="span"
-          size="sm"
-          c={TAG_COLORS[tagType] ?? 'dimmed'}
-          td="underline dotted"
-          style={{ cursor: 'pointer' }}
-          onClick={(e: React.MouseEvent) => {
-            e.stopPropagation();
-            open({ tagType, name, source });
-          }}
-        >
-          {displayText || name}
-        </Anchor>
-      </HoverCard.Target>
-      <HoverCard.Dropdown
-        style={{ maxHeight: 300, overflowY: 'auto' }}
+      <HoverCard
+        width="auto"
+        shadow="md"
+        openDelay={400}
+        closeDelay={100}
+        position="bottom-start"
+        withinPortal
       >
-        <HoverPreview tagType={tagType} name={name} source={source} />
-      </HoverCard.Dropdown>
-    </HoverCard>
+        <HoverCard.Target>
+          <Anchor
+            component="span"
+            size="sm"
+            c={TAG_COLORS[tagType] ?? 'dimmed'}
+            td="underline dotted"
+          >
+            {displayText || name}
+          </Anchor>
+        </HoverCard.Target>
+        <HoverCard.Dropdown
+          style={{ maxHeight: 300, overflowY: 'auto' }}
+        >
+          <HoverPreview tagType={tagType} name={name} source={source} />
+        </HoverCard.Dropdown>
+      </HoverCard>
+    </span>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Drawer, Group, ActionIcon, Loader, Text, Stack, ScrollArea } from '@mantine/core';
+import { Drawer, Group, ActionIcon, Loader, Text, ScrollArea } from '@mantine/core';
 import { IconArrowLeft, IconX } from '@tabler/icons-react';
 import { useWikiDrawer, type WikiTarget } from './WikiDrawerContext';
 import { lookupEntity } from '@/api/wiki';

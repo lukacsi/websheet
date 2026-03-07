@@ -380,6 +380,134 @@ function parseSkillChoices(skill: any): { from: string[]; count: number } | null
   return null;
 }
 
+// --- Proficiency / Language choice parsers ---
+
+interface ProfChoice {
+  type: "anyArtisansTool" | "anyMusicalInstrument" | "anyGamingSet" | "specific";
+  count: number;
+  from?: string[];
+}
+
+interface LangChoice {
+  type: "anyStandard" | "any" | "specific";
+  count: number;
+  from?: string[];
+}
+
+/**
+ * Parse 5e.tools tool proficiency entries into structured choices.
+ * Handles: anyArtisansTool, anyMusicalInstrument, anyGamingSet, choose:{from}
+ * Also parses raw text strings like "three Musical Instruments".
+ */
+function parseProfChoices(profArr?: any[]): ProfChoice[] | null {
+  if (!profArr || profArr.length === 0) return null;
+  const choices: ProfChoice[] = [];
+
+  for (const p of profArr) {
+    if (typeof p !== "object" || p === null) continue;
+
+    // Direct typed flags
+    if (p.anyArtisansTool) {
+      choices.push({ type: "anyArtisansTool", count: typeof p.anyArtisansTool === "number" ? p.anyArtisansTool : 1 });
+    }
+    if (p.anyMusicalInstrument) {
+      choices.push({ type: "anyMusicalInstrument", count: typeof p.anyMusicalInstrument === "number" ? p.anyMusicalInstrument : 1 });
+    }
+    if (p.anyGamingSet) {
+      choices.push({ type: "anyGamingSet", count: typeof p.anyGamingSet === "number" ? p.anyGamingSet : 1 });
+    }
+
+    // choose:{from:[...], count:N}
+    if (p.choose) {
+      const ch = p.choose;
+      if (ch.from) {
+        choices.push({ type: "specific", count: ch.count || 1, from: ch.from });
+      }
+    }
+  }
+  return choices.length > 0 ? choices : null;
+}
+
+/**
+ * Parse tool choices from raw text strings (class toolProficiencies).
+ * Handles patterns like:
+ *   "three {@item musical instrument|XPHB|Musical Instruments}"
+ *   "Choose three {@item Musical Instrument|XPHB|Musical Instruments}"
+ *   "one type of {@item artisan's tools|XPHB}"
+ *   "any one type of {@item artisan's tools|PHB} or any one {@item musical instrument|PHB}"
+ */
+function parseProfChoicesFromText(textArr?: string[]): ProfChoice[] | null {
+  if (!textArr || textArr.length === 0) return null;
+  const choices: ProfChoice[] = [];
+  const countWords: Record<string, number> = {
+    one: 1, a: 1, an: 1, two: 2, three: 3, four: 4, five: 5,
+  };
+
+  for (const raw of textArr) {
+    // Strip {@item ...} tags → clean text, then lowercase
+    const text = raw.replace(/\{@item ([^|}]+)[^}]*\}/gi, "$1").toLowerCase();
+
+    // Skip fixed proficiencies — only parse strings with choice language
+    if (!/choose|any|\bor\b|of your choice|\bone\b.*type/i.test(text)) continue;
+
+    const hasMusical = /musical\s+instrument/i.test(text);
+    const hasArtisan = /artisan/i.test(text);
+    const hasGaming = /gaming\s+set/i.test(text);
+
+    if (!hasMusical && !hasArtisan && !hasGaming) continue;
+
+    // Extract count — search for number words or digits anywhere in text
+    let count = 1;
+    const countMatch = text.match(/\b(one|two|three|four|five|a|an|\d+)\b/);
+    if (countMatch) {
+      count = countWords[countMatch[1]] ?? parseInt(countMatch[1]) ?? 1;
+    }
+
+    // Handle "or" pattern (e.g. Monk: "one artisan's tools or one musical instrument")
+    // This is a pick-one-from-either-pool choice; emit both types with count 1
+    const hasOr = /\bor\b/.test(text);
+    if (hasOr && ((hasMusical && hasArtisan) || (hasMusical && hasGaming) || (hasArtisan && hasGaming))) {
+      if (hasArtisan) choices.push({ type: "anyArtisansTool", count: 1 });
+      if (hasMusical) choices.push({ type: "anyMusicalInstrument", count: 1 });
+      if (hasGaming) choices.push({ type: "anyGamingSet", count: 1 });
+    } else if (hasMusical) {
+      choices.push({ type: "anyMusicalInstrument", count });
+    } else if (hasArtisan) {
+      choices.push({ type: "anyArtisansTool", count });
+    } else if (hasGaming) {
+      choices.push({ type: "anyGamingSet", count });
+    }
+  }
+  return choices.length > 0 ? choices : null;
+}
+
+/**
+ * Parse 5e.tools language proficiency entries into structured choices.
+ * Handles: anyStandard, any, choose:{from}
+ */
+function parseLanguageChoices(langProfArr?: any[]): LangChoice[] | null {
+  if (!langProfArr || langProfArr.length === 0) return null;
+  const choices: LangChoice[] = [];
+
+  for (const lp of langProfArr) {
+    if (typeof lp !== "object" || lp === null) continue;
+
+    if (lp.anyStandard) {
+      choices.push({ type: "anyStandard", count: typeof lp.anyStandard === "number" ? lp.anyStandard : 1 });
+    }
+    if (typeof lp.any === "number") {
+      choices.push({ type: "any", count: lp.any });
+    }
+    if (lp.choose) {
+      const ch = lp.choose;
+      if (ch.from) {
+        choices.push({ type: "specific", count: ch.count || 1, from: ch.from });
+      }
+    }
+  }
+  return choices.length > 0 ? choices : null;
+}
+
 // --- Importers ---
 
 async function importSpells(): Promise<{ created: number; updated: number }> {
@@ -459,6 +587,11 @@ async function importClasses(): Promise<{ created: number; updated: number }> {
       armorProficiencies: c.startingProficiencies?.armor || [],
       weaponProficiencies: c.startingProficiencies?.weapons || [],
       toolProficiencies: c.startingProficiencies?.tools || [],
+      toolChoices: parseProfChoices(c.startingProficiencies?.tools)
+        || parseProfChoicesFromText(
+          (c.startingProficiencies?.tools || [])
+            .filter((t: any) => typeof t === "string")
+        ),
       skillChoices: parseSkillChoices(c.startingProficiencies?.skills?.[0]),
       startingEquipment: c.startingEquipment?.entries || c.startingEquipment?.defaultData || [],
       classFeatures: c.classFeatures || [],
@@ -590,12 +723,19 @@ async function importRaces(): Promise<{ created: number; updated: number }> {
       darkvision: r.darkvision || 0,
       abilityBonuses,
       resistances: r.resist?.filter((x: any) => typeof x === "string") || null,
+      resistanceChoices: (() => {
+        const chooseObjs = (r.resist || []).filter((x: any) => typeof x === "object" && x?.choose);
+        if (chooseObjs.length === 0) return null;
+        return chooseObjs.map((x: any) => ({ from: x.choose.from || [] }));
+      })(),
       immunities: r.immune?.filter((x: any) => typeof x === "string") || null,
       conditionImmunities: r.conditionImmune || null,
       skillProficiencies: extractProfNames(r.skillProficiencies),
       weaponProficiencies: extractProfNames(r.weaponProficiencies),
       toolProficiencies: extractProfNames(r.toolProficiencies),
+      toolChoices: parseProfChoices(r.toolProficiencies),
       languages,
+      languageChoices: parseLanguageChoices(r.languageProficiencies),
       traits: r.entries || [],
     };
 
@@ -707,7 +847,9 @@ async function importBackgrounds(): Promise<{ created: number; updated: number }
       edition: edition(b.source, b.edition),
       skillProficiencies: skillProfs,
       toolProficiencies: toolProfs,
+      toolChoices: parseProfChoices(b.toolProficiencies),
       languages: languages.length > 0 ? languages : null,
+      languageChoices: parseLanguageChoices(b.languageProficiencies),
       startingEquipment: b.startingEquipment || [],
       feats: b.feats ? Object.keys(b.feats[0] || {}) : null,
       feature: featureEntry || null,
@@ -1161,6 +1303,18 @@ async function importCreatures(): Promise<{ created: number; updated: number }> 
       entries: m.entries || [],
       trait: m.trait || null,
       actionEntries: m.action || null,
+      save: m.save || null,
+      skill: m.skill || null,
+      passive: m.passive ?? null,
+      senses: m.senses || null,
+      languages: m.languages || null,
+      resist: m.resist || null,
+      immune: m.immune || null,
+      vulnerable: m.vulnerable || null,
+      conditionImmune: m.conditionImmune || null,
+      reaction: m.reaction || null,
+      legendary: m.legendary || null,
+      bonus: m.bonus || null,
     };
 
     const result = await upsert("creatures", record);
