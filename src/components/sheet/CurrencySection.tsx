@@ -18,7 +18,7 @@ interface Props {
 
 export function CurrencySection({ currency, onChange }: Props) {
   return (
-    <Group gap="xs">
+    <Group gap="xs" wrap="nowrap">
       {COINS.map(({ key, label, color }) => (
         <NumberInput
           key={key}
@@ -26,7 +26,7 @@ export function CurrencySection({ currency, onChange }: Props) {
           onChange={(v) => onChange({ ...currency, [key]: numOrDefault(v, 0) })}
           min={0}
           size="xs"
-          w={70}
+          style={{ flex: 1 }}
           label={<Text size="xs" fw={600} style={{ color }}>{label}</Text>}
           styles={centeredInputStyles}
         />

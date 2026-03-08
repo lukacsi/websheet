@@ -82,6 +82,7 @@ export function InventorySection({ items, attunementSlots, onChange, onAttunemen
       />
 
       {items.length > 0 && (
+        <Table.ScrollContainer minWidth={400}>
         <Table withRowBorders verticalSpacing={2} horizontalSpacing="xs" fz="sm">
           <Table.Thead style={{ borderBottom: '1px solid rgba(191, 157, 100, 0.15)' }}>
             <Table.Tr>
@@ -148,6 +149,7 @@ export function InventorySection({ items, attunementSlots, onChange, onAttunemen
             ))}
           </Table.Tbody>
         </Table>
+        </Table.ScrollContainer>
       )}
 
       <Button size="compact-xs" variant="subtle" onClick={addCustomItem}>+ Custom item</Button>

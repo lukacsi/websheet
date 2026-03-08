@@ -53,3 +53,8 @@ src/
 - Edition field: `"classic"` = 2014 rules, `"one"` = 2024 rules
 - Homebrew items use `isHomebrew: true` flag — same storage path as official content
 - Path aliases: `@/` maps to `src/`
+
+## Workflow
+
+- **Commit after each completed ticket/task** — don't accumulate uncommitted changes across multiple tickets. Type-check (`pnpm exec tsc --noEmit`) before committing.
+- **Mark progress in `docs/ux-tickets.md`** — strike through and mark as **Done** in the priority table when a ticket is completed. Include this in the commit.
