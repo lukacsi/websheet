@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { Stack, Table, TextInput, NumberInput, Checkbox, ActionIcon, Group, Button, Select } from '@mantine/core';
+import { Stack, Table, TextInput, NumberInput, Checkbox, Group, Button, Select } from '@mantine/core';
 import type { CharacterItem } from '@/types';
 import { WikiLink } from '@/components/wiki/WikiLink';
 import { useItems } from '@/hooks/useItems';
+import { numOrDefault } from '@/utils/form-helpers';
+import { centeredInputStyles } from '@/theme/styles';
+import { RemoveButton } from './RemoveButton';
 
 interface Props {
   items: CharacterItem[];
@@ -49,12 +52,12 @@ export function InventorySection({ items, attunementSlots, onChange, onAttunemen
         <NumberInput
           label="Attunement Slots"
           value={attunementSlots}
-          onChange={(v) => onAttunementChange(typeof v === 'number' ? v : 3)}
+          onChange={(v) => onAttunementChange(numOrDefault(v, 3))}
           min={0}
           max={10}
           size="xs"
           w={120}
-          styles={{ input: { textAlign: 'center' } }}
+          styles={centeredInputStyles}
         />
         <NumberInput
           label="Used"
@@ -62,7 +65,7 @@ export function InventorySection({ items, attunementSlots, onChange, onAttunemen
           readOnly
           size="xs"
           w={60}
-          styles={{ input: { textAlign: 'center' } }}
+          styles={centeredInputStyles}
         />
       </Group>
 
@@ -110,12 +113,12 @@ export function InventorySection({ items, attunementSlots, onChange, onAttunemen
                 <Table.Td>
                   <NumberInput
                     value={item.quantity}
-                    onChange={(v) => updateItem(i, { quantity: typeof v === 'number' ? v : 1 })}
+                    onChange={(v) => updateItem(i, { quantity: numOrDefault(v, 1) })}
                     min={0}
                     size="xs"
                     w={45}
                     variant="unstyled"
-                    styles={{ input: { textAlign: 'center' } }}
+                    styles={centeredInputStyles}
                   />
                 </Table.Td>
                 <Table.Td ta="center">
@@ -133,9 +136,7 @@ export function InventorySection({ items, attunementSlots, onChange, onAttunemen
                   />
                 </Table.Td>
                 <Table.Td>
-                  <ActionIcon size="xs" variant="subtle" color="red" onClick={() => removeItem(i)}>
-                    &times;
-                  </ActionIcon>
+                  <RemoveButton onClick={() => removeItem(i)} />
                 </Table.Td>
               </Table.Tr>
             ))}

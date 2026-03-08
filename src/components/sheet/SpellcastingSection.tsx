@@ -2,6 +2,8 @@ import { Stack, Group, Text, Select, NumberInput, Table, Paper } from '@mantine/
 import type { AbilityKey, AbilityScores, SpellSlots } from '@/types';
 import { ABILITY_NAMES } from '@/types';
 import { spellSaveDc, spellAttackBonus, formatModifier } from '@/utils/derived-stats';
+import { numOrDefault } from '@/utils/form-helpers';
+import { darkPaperStyle, centeredCompactInputStyles } from '@/theme/styles';
 
 const CASTING_OPTIONS = [
   { value: '', label: 'None' },
@@ -56,13 +58,13 @@ export function SpellcastingSection({
           w={140}
         />
         {dc !== null && (
-          <Paper p="xs" ta="center" style={{ backgroundColor: 'var(--mantine-color-dark-7)', border: '1px solid var(--mantine-color-dark-5)' }}>
+          <Paper p="xs" ta="center" style={darkPaperStyle}>
             <Text size="xs" c="dimmed">Spell Save DC</Text>
             <Text fw={700} size="lg">{dc}</Text>
           </Paper>
         )}
         {atk !== null && (
-          <Paper p="xs" ta="center" style={{ backgroundColor: 'var(--mantine-color-dark-7)', border: '1px solid var(--mantine-color-dark-5)' }}>
+          <Paper p="xs" ta="center" style={darkPaperStyle}>
             <Text size="xs" c="dimmed">Spell Attack</Text>
             <Text fw={700} size="lg">{formatModifier(atk)}</Text>
           </Paper>
@@ -84,11 +86,11 @@ export function SpellcastingSection({
                 <Table.Td key={i} ta="center" p={2}>
                   <NumberInput
                     value={m}
-                    onChange={(v) => setMax(i, typeof v === 'number' ? v : 0)}
+                    onChange={(v) => setMax(i, numOrDefault(v, 0))}
                     min={0}
                     size="xs"
                     w={44}
-                    styles={{ input: { textAlign: 'center', padding: 2 } }}
+                    styles={centeredCompactInputStyles}
                   />
                 </Table.Td>
               ))}
@@ -99,12 +101,12 @@ export function SpellcastingSection({
                   <Text size="xs" c="dimmed" mb={2}>used</Text>
                   <NumberInput
                     value={u}
-                    onChange={(v) => setUsed(i, typeof v === 'number' ? v : 0)}
+                    onChange={(v) => setUsed(i, numOrDefault(v, 0))}
                     min={0}
                     max={max[i]}
                     size="xs"
                     w={44}
-                    styles={{ input: { textAlign: 'center', padding: 2 } }}
+                    styles={centeredCompactInputStyles}
                   />
                 </Table.Td>
               ))}

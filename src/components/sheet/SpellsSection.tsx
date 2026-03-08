@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Stack, Table, Checkbox, ActionIcon, Select, Group, Text, Badge } from '@mantine/core';
+import { Stack, Table, Checkbox, Select, Group, Text, Badge } from '@mantine/core';
 import type { CharacterSpell } from '@/types';
 import { WikiLink } from '@/components/wiki/WikiLink';
 import { useSpells } from '@/hooks/useSpells';
+import { RemoveButton } from './RemoveButton';
 
 const SCHOOL_NAMES: Record<string, string> = {
   A: 'Abj', C: 'Conj', D: 'Div', E: 'Ench',
@@ -127,14 +128,7 @@ export function SpellsSection({ spells, onChange }: Props) {
                         </Group>
                       </Table.Td>
                       <Table.Td w={30}>
-                        <ActionIcon
-                          size="xs"
-                          variant="subtle"
-                          color="red"
-                          onClick={() => removeSpell(idx)}
-                        >
-                          &times;
-                        </ActionIcon>
+                        <RemoveButton onClick={() => removeSpell(idx)} />
                       </Table.Td>
                     </Table.Tr>
                   );

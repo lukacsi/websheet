@@ -1,5 +1,8 @@
-import { Stack, TextInput, NumberInput, Select, ActionIcon, Table, Button } from '@mantine/core';
+import { Stack, TextInput, NumberInput, Select, Table, Button } from '@mantine/core';
 import type { TrackedResource } from '@/types';
+import { numOrDefault } from '@/utils/form-helpers';
+import { centeredInputStyles } from '@/theme/styles';
+import { RemoveButton } from './RemoveButton';
 
 const RESET_OPTIONS = [
   { value: 'short', label: 'Short Rest' },
@@ -55,24 +58,24 @@ export function ResourcesSection({ resources, onChange }: Props) {
                 <Table.Td>
                   <NumberInput
                     value={r.used}
-                    onChange={(v) => updateResource(i, { used: typeof v === 'number' ? v : 0 })}
+                    onChange={(v) => updateResource(i, { used: numOrDefault(v, 0) })}
                     min={0}
                     max={r.max}
                     size="xs"
                     w={45}
                     variant="unstyled"
-                    styles={{ input: { textAlign: 'center' } }}
+                    styles={centeredInputStyles}
                   />
                 </Table.Td>
                 <Table.Td>
                   <NumberInput
                     value={r.max}
-                    onChange={(v) => updateResource(i, { max: typeof v === 'number' ? v : 1 })}
+                    onChange={(v) => updateResource(i, { max: numOrDefault(v, 1) })}
                     min={0}
                     size="xs"
                     w={45}
                     variant="unstyled"
-                    styles={{ input: { textAlign: 'center' } }}
+                    styles={centeredInputStyles}
                   />
                 </Table.Td>
                 <Table.Td>
@@ -86,9 +89,7 @@ export function ResourcesSection({ resources, onChange }: Props) {
                   />
                 </Table.Td>
                 <Table.Td>
-                  <ActionIcon size="xs" variant="subtle" color="red" onClick={() => removeResource(i)}>
-                    &times;
-                  </ActionIcon>
+                  <RemoveButton onClick={() => removeResource(i)} />
                 </Table.Td>
               </Table.Tr>
             ))}

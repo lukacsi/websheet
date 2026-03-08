@@ -1,5 +1,7 @@
 import { Group, NumberInput, Text } from '@mantine/core';
 import type { Currency } from '@/types';
+import { numOrDefault } from '@/utils/form-helpers';
+import { centeredInputStyles } from '@/theme/styles';
 
 const COINS: { key: keyof Currency; label: string; color: string }[] = [
   { key: 'pp', label: 'PP', color: '#c0c0c0' },
@@ -21,12 +23,12 @@ export function CurrencySection({ currency, onChange }: Props) {
         <NumberInput
           key={key}
           value={currency[key]}
-          onChange={(v) => onChange({ ...currency, [key]: typeof v === 'number' ? v : 0 })}
+          onChange={(v) => onChange({ ...currency, [key]: numOrDefault(v, 0) })}
           min={0}
           size="xs"
           w={70}
           label={<Text size="xs" fw={600} style={{ color }}>{label}</Text>}
-          styles={{ input: { textAlign: 'center' } }}
+          styles={centeredInputStyles}
         />
       ))}
     </Group>
