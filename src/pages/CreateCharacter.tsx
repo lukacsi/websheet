@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container, Stepper, Button, Group, Title, Alert } from '@mantine/core';
+import { Container, Stepper, Button, Group, Title, Alert, Paper } from '@mantine/core';
 import { useForm, FormProvider, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +14,7 @@ import { StepBackground } from '@/components/create/StepBackground';
 import { StepRace } from '@/components/create/StepRace';
 import { StepAbilityScores } from '@/components/create/StepAbilityScores';
 import { StepReview } from '@/components/create/StepReview';
+import { surfaceStyle, cardStyle } from '@/theme/styles';
 
 const STEP_LABELS = ['Basics', 'Class', 'Background', 'Species', 'Abilities', 'Review'];
 
@@ -75,16 +76,18 @@ export function CreateCharacter() {
         ))}
       </Stepper>
 
-      <FormProvider {...methods}>
-        <form onSubmit={e => e.preventDefault()}>
-          {active === 0 && <StepBasics />}
-          {active === 1 && <StepClass />}
-          {active === 2 && <StepBackground />}
-          {active === 3 && <StepRace />}
-          {active === 4 && <StepAbilityScores />}
-          {active === 5 && <StepReview />}
-        </form>
-      </FormProvider>
+      <Paper p="md" style={cardStyle} pb={60}>
+        <FormProvider {...methods}>
+          <form onSubmit={e => e.preventDefault()}>
+            {active === 0 && <StepBasics />}
+            {active === 1 && <StepClass />}
+            {active === 2 && <StepBackground />}
+            {active === 3 && <StepRace />}
+            {active === 4 && <StepAbilityScores />}
+            {active === 5 && <StepReview />}
+          </form>
+        </FormProvider>
+      </Paper>
 
       {saveError && (
         <Alert icon={<IconAlertCircle size={16} />} color="bloodRed" mt="md">
@@ -92,7 +95,17 @@ export function CreateCharacter() {
         </Alert>
       )}
 
-      <Group justify="space-between" mt="xl">
+      <Group
+        justify="space-between"
+        p="md"
+        style={{
+          position: 'sticky',
+          bottom: 0,
+          ...surfaceStyle,
+          borderTop: '1px solid rgba(191, 157, 100, 0.15)',
+          zIndex: 10,
+        }}
+      >
         <Button
           variant="default"
           onClick={handleBack}

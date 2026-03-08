@@ -220,6 +220,12 @@ export function StepClass() {
         />
       </Group>
 
+      {!classId && !loading && (
+        <Text size="sm" c="parchment.6" ta="center" py="xl" fs="italic">
+          Select a class to see its features and abilities.
+        </Text>
+      )}
+
       {cls && (
         <EntityCard
           name={cls.name}

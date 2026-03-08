@@ -50,6 +50,12 @@ export function StepRace() {
         />
       )}
 
+      {!raceId && !loading && (
+        <Text size="sm" c="parchment.6" ta="center" py="xl" fs="italic">
+          Select a species to see its traits and abilities.
+        </Text>
+      )}
+
       {race && (
         <EntityCard
           name={race.name}

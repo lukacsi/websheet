@@ -64,6 +64,12 @@ export function StepBackground() {
         />
       )}
 
+      {!backgroundId && !loading && (
+        <Text size="sm" c="parchment.6" ta="center" py="xl" fs="italic">
+          Select a background to see its benefits and features.
+        </Text>
+      )}
+
       {background && (
         <EntityCard
           name={background.name}
