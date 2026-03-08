@@ -3,6 +3,7 @@ import type { AbilityScores, Skill } from '@/types';
 import { SKILL_ABILITY } from '@/types';
 import { skillModifier, formatModifier } from '@/utils/derived-stats';
 import { WikiLink } from '@/components/wiki/WikiLink';
+import { toggleArrayItem } from '@/utils/form-helpers';
 
 const SKILLS = Object.keys(SKILL_ABILITY).sort() as Skill[];
 
@@ -36,11 +37,7 @@ export function SkillsSection({
   }
 
   function toggleExpertise(skill: Skill) {
-    if (expertise.includes(skill)) {
-      onExpertiseChange(expertise.filter((s) => s !== skill));
-    } else {
-      onExpertiseChange([...expertise, skill]);
-    }
+    onExpertiseChange(toggleArrayItem(expertise, skill));
   }
 
   return (

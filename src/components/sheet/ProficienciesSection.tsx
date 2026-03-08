@@ -1,7 +1,9 @@
 import { Stack, Text, Group, Badge, TextInput } from '@mantine/core';
 import { useState } from 'react';
 import { WikiLink } from '@/components/wiki/WikiLink';
+import { TaggedText } from '@/components/wiki/TaggedText';
 import type { EntityTagType } from '@/utils/parse-tags';
+import { RemoveButton } from './RemoveButton';
 
 interface TagListProps {
   label: string;
@@ -31,21 +33,14 @@ function TagList({ label, items, linkType, onChange }: TagListProps) {
       <Group gap={4} wrap="wrap">
         {items.map((item) => (
           <Group key={item} gap={2} wrap="nowrap">
-            {linkType ? (
+            {item.includes('{@') ? (
+              <Text size="sm" component="span"><TaggedText text={item} /></Text>
+            ) : linkType ? (
               <WikiLink tagType={linkType} name={item} />
             ) : (
               <Badge variant="light" color="inkBrown" size="md">{item}</Badge>
             )}
-            <Badge
-              variant="light"
-              color="red"
-              size="xs"
-              style={{ cursor: 'pointer' }}
-              onClick={() => removeItem(item)}
-              title="Remove"
-            >
-              &times;
-            </Badge>
+            <RemoveButton variant="badge" onClick={() => removeItem(item)} />
           </Group>
         ))}
         <TextInput
