@@ -1,5 +1,20 @@
 # Notes — WebSheet
 
+## 2026-03-09 — UX Review + Ticket System
+
+**Context:** UI redesign complete (Phases 1-7), needed professional UX assessment to identify remaining issues.
+
+**Decisions:**
+- Created structured ticket system (`docs/ux-tickets.md`) with 11 prioritized tickets from review
+- Added workflow convention: commit after each ticket, mark progress in tickets file
+- UX-01 (combat stats) needs planning before implementation — layout restructure is non-trivial
+
+**Done:**
+- Full visual UX review: 16 screenshots, comprehensive review doc (`review/UX-REVIEW.md`)
+- 11 UX tickets created, priority-ordered by gameplay impact
+- UX-04 (inventory overflow + currency wrapping) — fixed and committed
+- Workflow section added to CLAUDE.md
+
 ## 2026-03-08 — Phase 7: Final Polish — Full App Color Harmonization
 
 **Context:** Phases 1-6 themed all sheet components, but pages, wiki drawers, create wizard, and global component defaults still used Mantine blue/green/orange defaults and `c="dimmed"` text.
