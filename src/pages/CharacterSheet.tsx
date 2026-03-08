@@ -2,23 +2,24 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container, Title, Text, TextInput, Group, Stack, Grid, Paper,
-  LoadingOverlay, Button, Checkbox, Select, NumberInput,
+  LoadingOverlay, Button, Checkbox, Select, NumberInput, Tabs,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { fetchOne, createRecord, updateRecord } from '@/api/pocketbase';
-import type { Character, Skill } from '@/types';
+import { lookupEntity } from '@/api/wiki';
+import type { Character, CharacterFeat, Skill } from '@/types';
 import { abilityModifier } from '@/types';
 import {
   proficiencyBonus as calcProfBonus,
-  passivePerception,
 } from '@/utils/derived-stats';
 import { WikiLink } from '@/components/wiki/WikiLink';
-import { useClasses } from '@/hooks/useClasses';
+import { useClasses, useSubclasses } from '@/hooks/useClasses';
 import { useRaces } from '@/hooks/useRaces';
 import { useBackgrounds } from '@/hooks/useBackgrounds';
-import { AbilityScoresSection } from '@/components/sheet/AbilityScoresSection';
-import { CombatSection } from '@/components/sheet/CombatSection';
-import { SavingThrowsSection } from '@/components/sheet/SavingThrowsSection';
+import { getSubclass } from '@/api/classes';
+import { AbilityBlock } from '@/components/sheet/AbilityBlock';
+import { CombatSidebar } from '@/components/sheet/CombatSidebar';
+import { SensesSection } from '@/components/sheet/SensesSection';
 import { SkillsSection } from '@/components/sheet/SkillsSection';
 import { ProficienciesSection } from '@/components/sheet/ProficienciesSection';
 import { NotesSection } from '@/components/sheet/NotesSection';
@@ -30,6 +31,11 @@ import { SpellsSection } from '@/components/sheet/SpellsSection';
 import { CurrencySection } from '@/components/sheet/CurrencySection';
 import { InventorySection } from '@/components/sheet/InventorySection';
 import { ResourcesSection } from '@/components/sheet/ResourcesSection';
+import { AttacksSection } from '@/components/sheet/AttacksSection';
+import { FeaturesSection } from '@/components/sheet/FeaturesSection';
+import { PersonalitySection } from '@/components/sheet/PersonalitySection';
+import { AppearanceSection } from '@/components/sheet/AppearanceSection';
+import { BackstorySection } from '@/components/sheet/BackstorySection';
 
 const DEFAULT_CHARACTER: Character = {
   name: '',
@@ -51,6 +57,7 @@ const DEFAULT_CHARACTER: Character = {
   deathSaves: { successes: 0, failures: 0 },
   hitDice: [],
   conditions: [],
+  exhaustionLevel: 0,
   savingThrowProficiencies: [],
   skillProficiencies: [],
   skillExpertise: [],
@@ -64,9 +71,19 @@ const DEFAULT_CHARACTER: Character = {
   items: [],
   currency: { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 },
   attunementSlots: 3,
+  attacks: [],
   featureIds: [],
   featureChoices: {},
+  feats: [],
   resources: [],
+  personalityTraits: '',
+  ideals: '',
+  bonds: '',
+  flaws: '',
+  appearance: { age: '', height: '', weight: '', eyes: '', skin: '', hair: '' },
+  backstory: '',
+  alliesAndOrganizations: '',
+  additionalFeaturesAndTraits: '',
   level: 1,
   xp: 0,
   inspiration: false,
@@ -88,6 +105,9 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
+/* Header height for viewport calc — adjust if header design changes */
+const HEADER_HEIGHT = 110;
+
 export function CharacterSheet() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -103,6 +123,14 @@ export function CharacterSheet() {
   const { classes } = useClasses();
   const { races } = useRaces();
   const { backgrounds } = useBackgrounds();
+
+  // Subclass dropdown data
+  const currentClass = classes.find((c) => c.id === character.classes[0]?.classId);
+  const { subclasses } = useSubclasses(currentClass?.name, currentClass?.source);
+  const subclassSelectData = subclasses.map((sc) => ({
+    value: sc.id,
+    label: `${sc.name} (${sc.source})`,
+  }));
 
   // Build race select data including subraces
   const raceSelectData = races.flatMap((r) => {
@@ -130,7 +158,11 @@ export function CharacterSheet() {
     fetchOne<Character>('characters', id!)
       .then((c) => {
         if (!cancelled) {
-          setCharacter(c);
+          // PB returns null for empty JSON fields — strip nulls so defaults survive
+          const clean = Object.fromEntries(
+            Object.entries(c).filter(([, v]) => v != null),
+          );
+          setCharacter({ ...DEFAULT_CHARACTER, ...clean });
           setSavedId(c.id);
         }
       })
@@ -235,47 +267,144 @@ export function CharacterSheet() {
         toolProficiencies: [...(cls.toolProficiencies ?? [])],
         hitDice: [{ die: cls.hitDie, total: character.level, used: 0 }],
         spellcastingAbility: cls.spellcastingAbility,
+        // Clear subclass spells when class changes
+        spells: character.spells.filter((s) => s.source !== 'subclass'),
       });
     } else {
-      update({ classes: [] });
+      update({
+        classes: [],
+        spells: character.spells.filter((s) => s.source !== 'subclass'),
+      });
     }
   }
 
-  function handleBackgroundChange(bgId: string | null) {
-    const bg = backgrounds.find((b) => b.id === bgId);
-    if (bg) {
+  async function handleSubclassChange(subclassId: string | null) {
+    if (!subclassId || !character.classes[0]) {
+      update({
+        classes: character.classes.map((c, i) =>
+          i === 0 ? { ...c, subclassId: undefined, subclassName: undefined } : c
+        ),
+        spells: character.spells.filter((s) => s.source !== 'subclass'),
+      });
+      return;
+    }
+
+    const sc = await getSubclass(subclassId);
+    const partial: Partial<Character> = {
+      classes: character.classes.map((c, i) =>
+        i === 0 ? { ...c, subclassId: sc.id, subclassName: sc.shortName } : c
+      ),
+    };
+
+    // Override spellcasting ability if subclass specifies one
+    if (sc.spellcastingAbility) {
+      partial.spellcastingAbility = sc.spellcastingAbility;
+    }
+
+    // Auto-populate subclass spells (domain spells, oath spells, etc.)
+    // For single-variant subclasses, use the first (only) entry.
+    // Multi-variant subclasses (e.g. Circle of the Land) need a separate choice step.
+    if (sc.additionalSpells?.length === 1) {
+      const subSpells: typeof character.spells = [];
+      const spellEntry = sc.additionalSpells[0];
+      const prepared = spellEntry.prepared ?? {};
+      for (const [, spellNames] of Object.entries(prepared)) {
+        for (const entry of spellNames) {
+          const name = typeof entry === 'string' ? entry.split('|')[0] : '';
+          if (!name) continue;
+          if (!character.spells.some((s) => s.name === name && s.source === 'subclass')) {
+            subSpells.push({
+              spellId: '',
+              name,
+              prepared: true,
+              alwaysPrepared: true,
+              source: 'subclass',
+            });
+          }
+        }
+      }
+      // Remove old subclass spells and add new ones
+      partial.spells = [
+        ...character.spells.filter((s) => s.source !== 'subclass'),
+        ...subSpells,
+      ];
+    } else if (sc.additionalSpells && sc.additionalSpells.length > 1) {
+      // Multi-variant: clear old subclass spells, user picks variant via feature choices
+      partial.spells = character.spells.filter((s) => s.source !== 'subclass');
+    }
+
+    update(partial);
+  }
+
+  async function handleBackgroundChange(bgId: string | null) {
+    // Remove old background's proficiencies and feats before adding new ones
+    const oldBg = backgrounds.find((b) => b.id === character.backgroundId);
+    const oldSkills = new Set((oldBg?.skillProficiencies ?? []).map((s) => s.toLowerCase()));
+    const oldTools = new Set(oldBg?.toolProficiencies ?? []);
+    const oldLangs = new Set(oldBg?.languages ?? []);
+
+    const baseSkills = character.skillProficiencies.filter((s) => !oldSkills.has(s));
+    const baseTools = character.toolProficiencies.filter((t) => !oldTools.has(t));
+    const baseLangs = character.languages.filter((l) => !oldLangs.has(l));
+    const baseFeats = character.feats.filter((f) => f.source !== 'background');
+
+    const newBg = backgrounds.find((b) => b.id === bgId);
+    if (newBg) {
+      // Resolve background feats
+      const bgFeats: CharacterFeat[] = [];
+      const bgRecord = await fetchOne<{ feats: string[] }>('backgrounds', bgId!);
+      if (bgRecord.feats?.length) {
+        for (const featRef of bgRecord.feats) {
+          const [nameAndSpec, featSource] = featRef.split('|');
+          const baseName = nameAndSpec.split(';')[0].trim();
+          const titleName = baseName.replace(/\b\w/g, (c: string) => c.toUpperCase());
+          const record = await lookupEntity('feat', titleName, featSource?.toUpperCase() || undefined);
+          bgFeats.push({
+            featId: record?.id as string ?? '',
+            name: record?.name as string ?? titleName,
+            source: 'background',
+          });
+        }
+      }
+
       update({
         backgroundId: bgId ?? '',
-        backgroundName: bg.name,
+        backgroundName: newBg.name,
         skillProficiencies: [
           ...new Set([
-            ...character.skillProficiencies,
-            ...(bg.skillProficiencies ?? []).map((s) => s.toLowerCase() as Skill),
+            ...baseSkills,
+            ...(newBg.skillProficiencies ?? []).map((s) => s.toLowerCase() as Skill),
           ]),
         ],
         toolProficiencies: [
           ...new Set([
-            ...character.toolProficiencies,
-            ...(bg.toolProficiencies ?? []),
+            ...baseTools,
+            ...(newBg.toolProficiencies ?? []),
           ]),
         ],
         languages: [
           ...new Set([
-            ...character.languages,
-            ...(bg.languages ?? []),
+            ...baseLangs,
+            ...(newBg.languages ?? []),
           ]),
         ],
+        feats: [...baseFeats, ...bgFeats],
       });
     } else {
-      update({ backgroundId: '', backgroundName: '' });
+      update({
+        backgroundId: '',
+        backgroundName: '',
+        skillProficiencies: baseSkills as Skill[],
+        toolProficiencies: baseTools,
+        languages: baseLangs,
+        feats: baseFeats,
+      });
     }
   }
 
   // Rest actions
   function shortRest() {
     update({
-      // Recover hit dice (half total, round down) — not auto, just reset used to allow spending
-      // Reset short-rest resources
       resources: character.resources.map((r) =>
         r.resetsOn === 'short' ? { ...r, used: 0 } : r
       ),
@@ -289,18 +418,18 @@ export function CharacterSheet() {
       hp: character.maxHp,
       tempHp: 0,
       deathSaves: { successes: 0, failures: 0 },
-      conditions: [],
-      // Recover hit dice up to half total (minimum 1)
+      exhaustionLevel: Math.max(0, character.exhaustionLevel - 1),
+      conditions: character.exhaustionLevel > 1
+        ? character.conditions.filter((c) => c === 'exhaustion')
+        : [],
       hitDice: character.hitDice.map((hd) => ({
         ...hd,
         used: Math.max(0, hd.used - halfHitDice),
       })),
-      // Reset all spell slots
       spellSlots: {
         max: character.spellSlots.max,
         used: character.spellSlots.max.map(() => 0),
       },
-      // Reset short + long rest resources
       resources: character.resources.map((r) =>
         r.resetsOn === 'short' || r.resetsOn === 'long' || r.resetsOn === 'dawn'
           ? { ...r, used: 0 }
@@ -313,11 +442,6 @@ export function CharacterSheet() {
   // Calculated values
   const calcInitiative = abilityModifier(character.abilities.dex);
   const calcProfBonusVal = calcProfBonus(character.level);
-  const passPerception = passivePerception(
-    character.abilities.wis,
-    character.skillProficiencies.includes('perception'),
-    character.level,
-  );
 
   if (loading) {
     return (
@@ -328,37 +452,36 @@ export function CharacterSheet() {
   }
 
   return (
-    <Container size="xl" py="md">
-      {/* Header */}
+    <Container fluid px="md" py={0}>
+      {/* ── Header ── */}
       <Paper
-        p="md"
-        mb="md"
+        p="xs"
+        mb="xs"
         style={{
           backgroundColor: 'var(--mantine-color-dark-7)',
           border: '1px solid var(--mantine-color-dark-5)',
         }}
       >
-        <Grid>
-          <Grid.Col span={{ base: 12, sm: 3 }}>
+        <Grid gutter="xs">
+          <Grid.Col span={{ base: 12, sm: 2.5 }}>
             <TextInput
-              label="Character Name"
               value={character.name}
               onChange={(e) => update({ name: e.currentTarget.value })}
-              size="md"
-              styles={{ input: { fontFamily: 'Cinzel, serif', fontWeight: 700, fontSize: 20 } }}
+              size="sm"
+              placeholder="Character Name"
+              styles={{ input: { fontFamily: 'Cinzel, serif', fontWeight: 700, fontSize: 18 } }}
             />
           </Grid.Col>
           <Grid.Col span={{ base: 6, sm: 2 }}>
-            <Stack gap={2}>
+            <Stack gap={0}>
               <Select
-                label="Race"
                 data={raceSelectData}
                 value={character.subraceId ? `${character.raceId}::${character.subraceId}` : (character.raceId || null)}
                 onChange={handleRaceChange}
                 searchable
                 clearable
                 size="xs"
-                placeholder="Search..."
+                placeholder="Race"
               />
               {character.raceName && (
                 <Group gap={4}>
@@ -370,66 +493,82 @@ export function CharacterSheet() {
               )}
             </Stack>
           </Grid.Col>
-          <Grid.Col span={{ base: 6, sm: 2 }}>
-            <Stack gap={2}>
+          <Grid.Col span={{ base: 6, sm: 1.5 }}>
+            <Stack gap={0}>
               <Select
-                label="Class"
                 data={classSelectData}
                 value={character.classes[0]?.classId || null}
                 onChange={handleClassChange}
                 searchable
                 clearable
                 size="xs"
-                placeholder="Search..."
+                placeholder="Class"
               />
               {character.classes[0]?.className && (
                 <WikiLink tagType="class" name={character.classes[0].className} />
               )}
             </Stack>
           </Grid.Col>
-          <Grid.Col span={{ base: 6, sm: 2 }}>
-            <Stack gap={2}>
+          {currentClass && subclassSelectData.length > 0 && (
+            <Grid.Col span={{ base: 6, sm: 1.5 }}>
+              <Stack gap={0}>
+                <Select
+                  data={subclassSelectData}
+                  value={character.classes[0]?.subclassId || null}
+                  onChange={handleSubclassChange}
+                  searchable
+                  clearable
+                  size="xs"
+                  placeholder={currentClass.subclassTitle || 'Subclass'}
+                />
+                {character.classes[0]?.subclassName && (
+                  <WikiLink tagType="subclass" name={character.classes[0].subclassName} />
+                )}
+              </Stack>
+            </Grid.Col>
+          )}
+          <Grid.Col span={{ base: 6, sm: 1.5 }}>
+            <Stack gap={0}>
               <Select
-                label="Background"
                 data={bgSelectData}
                 value={character.backgroundId || null}
                 onChange={handleBackgroundChange}
                 searchable
                 clearable
                 size="xs"
-                placeholder="Search..."
+                placeholder="Background"
               />
               {character.backgroundName && (
                 <WikiLink tagType="background" name={character.backgroundName} />
               )}
             </Stack>
           </Grid.Col>
-          <Grid.Col span={{ base: 6, sm: 1.5 }}>
+          <Grid.Col span={{ base: 3, sm: 1.5 }}>
             <TextInput
-              label="Alignment"
               value={character.alignment ?? ''}
               onChange={(e) => update({ alignment: e.currentTarget.value })}
               size="xs"
+              placeholder="Alignment"
             />
           </Grid.Col>
-          <Grid.Col span={{ base: 6, sm: 1.5 }}>
+          <Grid.Col span={{ base: 3, sm: 1.5 }}>
             <TextInput
-              label="Player"
               value={character.playerName ?? ''}
               onChange={(e) => update({ playerName: e.currentTarget.value })}
               size="xs"
+              placeholder="Player"
             />
           </Grid.Col>
         </Grid>
-        <Group gap="md" mt="xs">
+
+        <Group gap="sm" mt={4}>
           <Checkbox
             label="Inspiration"
             checked={character.inspiration}
             onChange={(e) => update({ inspiration: e.currentTarget.checked })}
-            size="sm"
+            size="xs"
           />
           <Select
-            label="Edition"
             value={character.edition}
             onChange={(v) => update({ edition: (v ?? 'one') as 'one' | 'classic' })}
             data={[
@@ -437,137 +576,138 @@ export function CharacterSheet() {
               { value: 'classic', label: '2014' },
             ]}
             size="xs"
-            w={80}
+            w={75}
           />
           <NumberInput
-            label="XP"
             value={character.xp ?? 0}
             onChange={(v) => update({ xp: typeof v === 'number' ? v : 0 })}
             min={0}
             size="xs"
-            w={100}
+            w={90}
+            placeholder="XP"
           />
+          <Button size="compact-xs" variant="light" color="teal" onClick={shortRest}>
+            Short Rest
+          </Button>
+          <Button size="compact-xs" variant="light" color="blue" onClick={longRest}>
+            Long Rest
+          </Button>
+          <div style={{ flex: 1 }} />
+          <Text size="xs" c={dirty ? 'yellow' : 'dimmed'}>
+            {dirty ? 'Unsaved...' : (savedId ? 'Saved' : 'New')}
+          </Text>
+          <Button size="compact-xs" variant="light" onClick={() => save(character)}>
+            {savedId ? 'Save' : 'Create'}
+          </Button>
         </Group>
       </Paper>
 
-      <Grid gutter="md">
-        {/* Left column: Abilities, Saves, Skills */}
-        <Grid.Col span={{ base: 12, md: 4 }}>
-          <Stack gap="md">
-            <div>
-              <SectionTitle>Ability Scores</SectionTitle>
-              <AbilityScoresSection
-                abilities={character.abilities}
-                onChange={(abilities) => update({ abilities })}
-              />
-            </div>
+      {/* ── 3-Column Body ── */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '260px 1fr 240px',
+          gap: 'var(--mantine-spacing-sm)',
+          height: `calc(100vh - ${HEADER_HEIGHT}px)`,
+        }}
+        className="sheet-body"
+      >
+        {/* ── Left Sidebar: Abilities + Skills ── */}
+        <div style={{ overflowY: 'auto', paddingRight: 4 }}>
+          <SectionTitle>Abilities</SectionTitle>
+          <AbilityBlock
+            abilities={character.abilities}
+            savingThrowProficiencies={character.savingThrowProficiencies}
+            level={character.level}
+            onAbilitiesChange={(abilities) => update({ abilities })}
+            onSavesChange={(profs) => update({ savingThrowProficiencies: profs })}
+          />
 
-            <div>
-              <SectionTitle>Saving Throws</SectionTitle>
-              <SavingThrowsSection
-                abilities={character.abilities}
-                proficiencies={character.savingThrowProficiencies}
-                level={character.level}
-                onChange={(profs) => update({ savingThrowProficiencies: profs })}
-              />
-            </div>
+          <SectionTitle>Skills</SectionTitle>
+          <SkillsSection
+            abilities={character.abilities}
+            proficiencies={character.skillProficiencies}
+            expertise={character.skillExpertise}
+            level={character.level}
+            onProfChange={(profs) => update({ skillProficiencies: profs })}
+            onExpertiseChange={(exp) => update({ skillExpertise: exp })}
+          />
+        </div>
 
-            <div>
-              <SectionTitle>Skills</SectionTitle>
-              <SkillsSection
-                abilities={character.abilities}
-                proficiencies={character.skillProficiencies}
-                expertise={character.skillExpertise}
-                level={character.level}
-                onProfChange={(profs) => update({ skillProficiencies: profs })}
-                onExpertiseChange={(exp) => update({ skillExpertise: exp })}
-              />
-              <Text size="xs" c="dimmed" mt={4}>
-                Passive Perception: {passPerception}
-              </Text>
-            </div>
-          </Stack>
-        </Grid.Col>
+        {/* ── Center: Combat Stats + Tabbed Content ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0, overflowY: 'auto' }}>
+          <CombatSidebar
+            character={character}
+            calculatedInitiative={calcInitiative}
+            calculatedProfBonus={calcProfBonusVal}
+            onChange={update}
+          />
 
-        {/* Right column */}
-        <Grid.Col span={{ base: 12, md: 8 }}>
-          <Stack gap="md">
-            <div>
-              <Group justify="space-between" align="flex-end">
-                <SectionTitle>Combat</SectionTitle>
-                <Group gap="xs" mb="xs">
-                  <Button size="compact-sm" variant="light" color="teal" onClick={shortRest}>
-                    Short Rest
-                  </Button>
-                  <Button size="compact-sm" variant="light" color="blue" onClick={longRest}>
-                    Long Rest
-                  </Button>
-                </Group>
-              </Group>
-              <CombatSection
-                character={character}
-                calculatedInitiative={calcInitiative}
-                calculatedProfBonus={calcProfBonusVal}
-                onChange={update}
-              />
-            </div>
+        <Tabs defaultValue="combat" keepMounted={false} style={{ marginTop: 'var(--mantine-spacing-sm)' }} styles={{
+          root: { display: 'flex', flexDirection: 'column', minHeight: 0 },
+          panel: { flex: 1, overflowY: 'auto', paddingTop: 'var(--mantine-spacing-sm)' },
+          tab: {
+            fontFamily: '"Cinzel", serif',
+            textTransform: 'uppercase',
+            fontSize: 11,
+            letterSpacing: '0.5px',
+          },
+        }}>
+          <Tabs.List>
+            <Tabs.Tab value="combat">Combat</Tabs.Tab>
+            <Tabs.Tab value="spells">Spells</Tabs.Tab>
+            <Tabs.Tab value="inventory">Inventory</Tabs.Tab>
+            <Tabs.Tab value="features">Features</Tabs.Tab>
+            <Tabs.Tab value="notes">Notes</Tabs.Tab>
+            <Tabs.Tab value="about">About</Tabs.Tab>
+          </Tabs.List>
 
-            <Grid gutter="md">
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <SectionTitle>Death Saves</SectionTitle>
-                <DeathSavesSection
-                  deathSaves={character.deathSaves}
-                  onChange={(deathSaves) => update({ deathSaves })}
+          <Tabs.Panel value="combat">
+            <Stack gap="md">
+              <div>
+                <SectionTitle>Attacks &amp; Spellcasting</SectionTitle>
+                <AttacksSection
+                  attacks={character.attacks}
+                  items={character.items}
+                  abilities={character.abilities}
+                  level={character.level}
+                  onChange={(attacks) => update({ attacks })}
                 />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <SectionTitle>Hit Dice</SectionTitle>
-                <HitDiceSection
-                  hitDice={character.hitDice}
-                  onChange={(hitDice) => update({ hitDice })}
+              </div>
+              <div>
+                <SectionTitle>Resources</SectionTitle>
+                <ResourcesSection
+                  resources={character.resources}
+                  onChange={(resources) => update({ resources })}
                 />
-              </Grid.Col>
-            </Grid>
+              </div>
+            </Stack>
+          </Tabs.Panel>
 
-            <div>
-              <SectionTitle>Conditions</SectionTitle>
-              <ConditionsSection
-                conditions={character.conditions}
-                onChange={(conditions) => update({ conditions })}
-              />
-            </div>
+          <Tabs.Panel value="spells">
+            <Stack gap="md">
+              <div>
+                <SectionTitle>Spellcasting</SectionTitle>
+                <SpellcastingSection
+                  spellcastingAbility={character.spellcastingAbility}
+                  abilities={character.abilities}
+                  level={character.level}
+                  spellSlots={character.spellSlots}
+                  onAbilityChange={(ability) => update({ spellcastingAbility: ability })}
+                  onSlotsChange={(spellSlots) => update({ spellSlots })}
+                />
+              </div>
+              <div>
+                <SectionTitle>Spells</SectionTitle>
+                <SpellsSection
+                  spells={character.spells}
+                  onChange={(spells) => update({ spells })}
+                />
+              </div>
+            </Stack>
+          </Tabs.Panel>
 
-            <div>
-              <SectionTitle>Spellcasting</SectionTitle>
-              <SpellcastingSection
-                spellcastingAbility={character.spellcastingAbility}
-                abilities={character.abilities}
-                level={character.level}
-                spellSlots={character.spellSlots}
-                onAbilityChange={(ability) => update({ spellcastingAbility: ability })}
-                onSlotsChange={(spellSlots) => update({ spellSlots })}
-              />
-            </div>
-
-            <div>
-              <SectionTitle>Spells</SectionTitle>
-              <SpellsSection
-                spells={character.spells}
-                onChange={(spells) => update({ spells })}
-              />
-            </div>
-
-            <div>
-              <SectionTitle>Proficiencies &amp; Languages</SectionTitle>
-              <ProficienciesSection
-                armorProficiencies={character.armorProficiencies}
-                weaponProficiencies={character.weaponProficiencies}
-                toolProficiencies={character.toolProficiencies}
-                languages={character.languages}
-                onChange={(field, values) => update({ [field]: values })}
-              />
-            </div>
-
+          <Tabs.Panel value="inventory">
             <Grid gutter="md">
               <Grid.Col span={{ base: 12, sm: 7 }}>
                 <SectionTitle>Inventory</SectionTitle>
@@ -586,39 +726,128 @@ export function CharacterSheet() {
                 />
               </Grid.Col>
             </Grid>
+          </Tabs.Panel>
 
-            <div>
-              <SectionTitle>Resources</SectionTitle>
-              <ResourcesSection
-                resources={character.resources}
-                onChange={(resources) => update({ resources })}
-              />
-            </div>
+          <Tabs.Panel value="features">
+            <SectionTitle>Features &amp; Traits</SectionTitle>
+            <FeaturesSection
+              classes={character.classes}
+              level={character.level}
+              raceId={character.raceId}
+              raceName={character.raceName}
+              backgroundId={character.backgroundId}
+              feats={character.feats}
+              onFeatsChange={(feats) => update({ feats })}
+              featureChoices={character.featureChoices}
+              onFeatureChoicesChange={(featureChoices) => update({ featureChoices })}
+            />
+          </Tabs.Panel>
 
-            <div>
-              <SectionTitle>Notes</SectionTitle>
-              <NotesSection
-                notes={character.notes}
-                onChange={(notes) => update({ notes })}
-              />
-            </div>
-          </Stack>
-        </Grid.Col>
-      </Grid>
+          <Tabs.Panel value="notes">
+            <SectionTitle>Notes</SectionTitle>
+            <NotesSection
+              notes={character.notes}
+              onChange={(notes) => update({ notes })}
+            />
+          </Tabs.Panel>
 
-      {/* Save indicator */}
-      <Group justify="flex-end" mt="md">
-        <Text size="xs" c={dirty ? 'yellow' : 'dimmed'}>
-          {dirty ? 'Unsaved changes...' : (savedId ? 'All changes saved' : 'New character')}
-        </Text>
-        <Button
-          size="xs"
-          variant="light"
-          onClick={() => save(character)}
-        >
-          {savedId ? 'Save Now' : 'Create Character'}
-        </Button>
-      </Group>
+          <Tabs.Panel value="about">
+            <Stack gap="md">
+              <div>
+                <SectionTitle>Personality</SectionTitle>
+                <PersonalitySection
+                  personalityTraits={character.personalityTraits}
+                  ideals={character.ideals}
+                  bonds={character.bonds}
+                  flaws={character.flaws}
+                  onChange={(field, value) => update({ [field]: value })}
+                />
+              </div>
+              <div>
+                <SectionTitle>Appearance</SectionTitle>
+                <AppearanceSection
+                  appearance={character.appearance}
+                  portraitUrl={character.portraitUrl}
+                  onChange={(appearance) => update({ appearance })}
+                  onPortraitChange={(portraitUrl) => update({ portraitUrl })}
+                />
+              </div>
+              <div>
+                <SectionTitle>Backstory &amp; Allies</SectionTitle>
+                <BackstorySection
+                  backstory={character.backstory}
+                  alliesAndOrganizations={character.alliesAndOrganizations}
+                  onBackstoryChange={(backstory) => update({ backstory })}
+                  onAlliesChange={(alliesAndOrganizations) => update({ alliesAndOrganizations })}
+                />
+              </div>
+            </Stack>
+          </Tabs.Panel>
+        </Tabs>
+        </div>
+
+        {/* ── Right Sidebar ── */}
+        <div style={{ overflowY: 'auto', paddingLeft: 4 }}>
+          <SectionTitle>Death Saves</SectionTitle>
+          <DeathSavesSection
+            deathSaves={character.deathSaves}
+            onChange={(deathSaves) => update({ deathSaves })}
+          />
+
+          <SectionTitle>Hit Dice</SectionTitle>
+          <HitDiceSection
+            hitDice={character.hitDice}
+            onChange={(hitDice) => update({ hitDice })}
+          />
+
+          <SectionTitle>Conditions</SectionTitle>
+          <ConditionsSection
+            conditions={character.conditions}
+            edition={character.edition}
+            exhaustionLevel={character.exhaustionLevel}
+            onChange={(conditions) => update({ conditions })}
+            onExhaustionChange={(exhaustionLevel) => update({ exhaustionLevel })}
+          />
+
+          <SectionTitle>Senses</SectionTitle>
+          <SensesSection
+            abilities={character.abilities}
+            skillProficiencies={character.skillProficiencies}
+            level={character.level}
+          />
+
+          <SectionTitle>Proficiencies &amp; Languages</SectionTitle>
+          <ProficienciesSection
+            armorProficiencies={character.armorProficiencies}
+            weaponProficiencies={character.weaponProficiencies}
+            toolProficiencies={character.toolProficiencies}
+            languages={character.languages}
+            onChange={(field, values) => update({ [field]: values })}
+          />
+        </div>
+      </div>
+
+      {/* ── Responsive: collapse to 2-col / 1-col ── */}
+      <style>{`
+        @media (max-width: 1023px) {
+          .sheet-body {
+            grid-template-columns: 240px 1fr !important;
+            grid-template-rows: auto !important;
+          }
+          .sheet-body > div:last-child {
+            grid-column: 1 / -1;
+          }
+        }
+        @media (max-width: 767px) {
+          .sheet-body {
+            grid-template-columns: 1fr !important;
+            height: auto !important;
+          }
+          .sheet-body > div {
+            overflow-y: visible !important;
+          }
+        }
+      `}</style>
     </Container>
   );
 }
