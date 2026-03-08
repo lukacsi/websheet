@@ -4,6 +4,7 @@ import { IconArrowLeft, IconX } from '@tabler/icons-react';
 import { useWikiDrawer, type WikiTarget } from './WikiDrawerContext';
 import { lookupEntity } from '@/api/wiki';
 import { EntityDetailView } from './EntityDetailView';
+import { darkDrawerStyles } from '@/theme/styles';
 
 /** Inner content that re-fetches when target changes */
 function DrawerContent({ target }: { target: WikiTarget }) {
@@ -60,11 +61,7 @@ export function EntityDrawer() {
       position="right"
       size="xl"
       withCloseButton={false}
-      styles={{
-        body: { padding: 0, height: '100%', display: 'flex', flexDirection: 'column' },
-        content: { backgroundColor: 'var(--mantine-color-dark-8)' },
-        header: { backgroundColor: 'var(--mantine-color-dark-8)' },
-      }}
+      styles={darkDrawerStyles}
     >
       {/* Sticky header */}
       <Group

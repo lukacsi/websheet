@@ -75,6 +75,7 @@ export async function buildCharacter({ form, race, cls, background, subclass }: 
     deathSaves: { successes: 0, failures: 0 },
     hitDice: [{ die: cls.hitDie, total: level, used: 0 }],
     conditions: [],
+    exhaustionLevel: 0,
 
     savingThrowProficiencies: [...cls.savingThrows],
     skillProficiencies: uniqueSkills,
@@ -105,9 +106,19 @@ export async function buildCharacter({ form, race, cls, background, subclass }: 
     currency: { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 },
     attunementSlots: 3,
 
+    attacks: [],
     featureIds: [],
     featureChoices: form.featureChoices ?? {},
     resources: [],
+
+    personalityTraits: '',
+    ideals: '',
+    bonds: '',
+    flaws: '',
+    appearance: { age: '', height: '', weight: '', eyes: '', skin: '', hair: '' },
+    backstory: '',
+    alliesAndOrganizations: '',
+    additionalFeaturesAndTraits: '',
 
     level,
     inspiration: false,

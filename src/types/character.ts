@@ -42,6 +42,8 @@ export interface CharacterSpell {
   name: string;
   prepared: boolean;
   alwaysPrepared?: boolean;
+  /** Origin of the spell: 'class', 'subclass', 'race', 'item', or undefined for manual */
+  source?: string;
 }
 
 export interface DeathSaves {
@@ -54,6 +56,29 @@ export interface TrackedResource {
   max: number;
   used: number;
   resetsOn: 'short' | 'long' | 'dawn' | 'never';
+}
+
+export interface CharacterFeat {
+  featId: string;   // PB record ID, empty string for homebrew
+  name: string;
+  description?: string; // homebrew feat description
+  source?: string;  // 'background' | undefined (manual)
+}
+
+export interface CharacterAttack {
+  name: string;
+  attackBonus: string;   // e.g. "+5"
+  damage: string;        // e.g. "1d8+3 slashing"
+  itemId?: string;       // optional link to inventory weapon
+}
+
+export interface CharacterAppearance {
+  age: string;
+  height: string;
+  weight: string;
+  eyes: string;
+  skin: string;
+  hair: string;
 }
 
 export interface Character {
@@ -87,6 +112,7 @@ export interface Character {
   deathSaves: DeathSaves;
   hitDice: HitDice[];
   conditions: Condition[];
+  exhaustionLevel: number;
 
   // Proficiencies
   savingThrowProficiencies: AbilityKey[];
@@ -107,10 +133,26 @@ export interface Character {
   currency: Currency;
   attunementSlots: number;
 
+  // Attacks
+  attacks: CharacterAttack[];
+
   // Features & resources
   featureIds: string[];
   featureChoices: Record<string, string[]>;
+  feats: CharacterFeat[];
   resources: TrackedResource[];
+
+  // Personality (Page 2)
+  personalityTraits: string;
+  ideals: string;
+  bonds: string;
+  flaws: string;
+
+  // Appearance (Page 2)
+  appearance: CharacterAppearance;
+  backstory: string;
+  alliesAndOrganizations: string;
+  additionalFeaturesAndTraits: string;
 
   // Meta
   level: number; // total level across all classes

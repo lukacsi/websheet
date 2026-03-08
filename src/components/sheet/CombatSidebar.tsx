@@ -1,4 +1,4 @@
-import { NumberInput, Text, Paper, Group } from '@mantine/core';
+import { NumberInput, Text, Paper } from '@mantine/core';
 import type { Character } from '@/types';
 import { formatModifier } from '@/utils/derived-stats';
 import { numOrDefault } from '@/utils/form-helpers';
@@ -21,11 +21,7 @@ function StatBox({ label, children }: { label: string; children: React.ReactNode
     <Paper
       p="xs"
       ta="center"
-      style={{
-        ...darkPaperStyle,
-        minWidth: 100,
-        flex: '1 1 100px',
-      }}
+      style={darkPaperStyle}
     >
       <Text size="xs" tt="uppercase" fw={600} c="dimmed" mb={2}>
         {label}
@@ -37,7 +33,7 @@ function StatBox({ label, children }: { label: string; children: React.ReactNode
 
 export function CombatSidebar({ character, calculatedInitiative, calculatedProfBonus, onChange }: Props) {
   return (
-    <Group gap="xs" wrap="wrap" align="flex-start">
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 'var(--mantine-spacing-xs)' }}>
       <StatBox label="HP">
         <NumberInput
           value={character.hp}
@@ -130,6 +126,6 @@ export function CombatSidebar({ character, calculatedInitiative, calculatedProfB
           styles={centeredLargeInputStyles}
         />
       </StatBox>
-    </Group>
+    </div>
   );
 }

@@ -15,6 +15,15 @@ export interface ClassFeature {
   subclassName?: string;
 }
 
+export interface SubclassAdditionalSpells {
+  /** Variant name (e.g. "Arctic" for Circle of the Land) */
+  name?: string;
+  /** Spells auto-prepared at each class level (key = class level, value = spell names) */
+  prepared?: Record<string, (string | { choose: string })[]>;
+  /** Spells known at each class level */
+  known?: Record<string, Record<string, (string | { choose: string })[]>>;
+}
+
 export interface Subclass {
   id?: string;
   name: string;
@@ -25,6 +34,8 @@ export interface Subclass {
   edition?: Edition;
   features: string[];
   spellcastingAbility?: AbilityKey;
+  /** Full additionalSpells array — single entry for most, multiple for variant subclasses */
+  additionalSpells?: SubclassAdditionalSpells[];
 }
 
 export interface Class {

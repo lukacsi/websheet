@@ -122,3 +122,35 @@ export function spellAttackBonus(
 export function formatModifier(mod: number): string {
   return mod >= 0 ? `+${mod}` : `${mod}`;
 }
+
+/** Calculate weapon attack bonus: prof bonus + STR/DEX mod (finesse uses higher) */
+export function weaponAttackBonus(
+  itemType: string,
+  properties: string[],
+  abilities: AbilityScores,
+  level: number,
+): string {
+  const strMod = abilityModifier(abilities.str);
+  const dexMod = abilityModifier(abilities.dex);
+  const isFinesse = properties.includes('F');
+  const isRanged = itemType === 'R';
+  const mod = isFinesse ? Math.max(strMod, dexMod) : isRanged ? dexMod : strMod;
+  return formatModifier(mod + proficiencyBonus(level));
+}
+
+/** Calculate weapon damage string: e.g. "1d8+3 slashing" */
+export function weaponDamage(
+  damage: string,
+  damageType: string,
+  itemType: string,
+  properties: string[],
+  abilities: AbilityScores,
+): string {
+  const strMod = abilityModifier(abilities.str);
+  const dexMod = abilityModifier(abilities.dex);
+  const isFinesse = properties.includes('F');
+  const isRanged = itemType === 'R';
+  const mod = isFinesse ? Math.max(strMod, dexMod) : isRanged ? dexMod : strMod;
+  const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
+  return `${damage}${modStr} ${damageType}`;
+}

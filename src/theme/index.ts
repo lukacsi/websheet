@@ -38,8 +38,4 @@ export const theme = createTheme({
     fontFamily: '"Cinzel", "Crimson Text", Georgia, serif',
   },
   defaultRadius: 'sm',
-  other: {
-    parchmentBg: '#1a1612',
-    parchmentBorder: '#3d3227',
-  },
 });

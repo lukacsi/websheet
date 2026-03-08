@@ -1,5 +1,44 @@
 # Notes — WebSheet
 
+## 2026-03-08 — UI Audit & Streamlining Plan
+
+**Context:** Full audit of the character sheet UI — all 19 sheet components, 4 pages, AppShell, theme config. Goal: identify redundancy, inconsistency, complexity, UX friction, and theme drift before streamlining.
+
+**Analysis:**
+
+Key findings across 3 categories:
+
+**Redundancy (high impact):**
+- Dark Paper style (`dark-7` bg + `dark-5` border) copy-pasted ~12 times across components
+- `typeof v === 'number' ? v : fallback` NumberInput guard repeated ~20 times
+- `styles={{ input: { textAlign: 'center' } }}` repeated ~19 times
+- CRUD list operations (update/add/remove by index) identical in HitDice, Attacks, Resources
+- Array toggle pattern (`includes ? filter : [...arr, item]`) in 5+ places
+- Two different remove button patterns (ActionIcon vs Badge) doing the same thing
+
+**Theme drift:**
+- AppShell uses raw hex colors (`#1e1a15`, `#3d3227`, `#1a1612`) instead of theme tokens
+- global.css duplicates theme tokens as hardcoded hex
+- CurrencySection has 5 hardcoded hex colors for coin badges
+- `theme.other` tokens (`parchmentBg`, `parchmentBgLight`, `parchmentBorder`, `textMuted`) defined but never consumed
+- No `components` theme overrides — Mantine defaults to blue-gray dark palette, not warm brown
+- No `primaryShade` set
+
+**Complexity / UX:**
+- CharacterSheet.tsx is 854 lines (layout + state + sub-components + inline `<style>`)
+- FeaturesSection.tsx is ~553 lines with `backgroundName` unused prop
+- Right sidebar clipped off-screen in all screenshots
+- HitDice row has 8 elements in one horizontal Group
+- Embedded `<style>` tag for responsive layout instead of CSS modules
+
+**Decisions:**
+- Audit complete, streamlining plan created with 16 prioritized items
+- Quick wins first (shared constants, helpers), then medium refactors (shared components), then larger decompositions
+- Dead code identified: `backgroundName` prop, `theme.other.parchmentBgLight`, `theme.other.textMuted`
+
+**Done:**
+- Full Phase 1-3 audit report produced
+
 ## 2026-03-07 — Sandbox character sheet page
 
 **Context:** Needed a character sheet page that works as a sandbox — all fields editable, no rule enforcement, but with auto-calculated modifiers and full wiki integration. Also needed manual character creation without the wizard.

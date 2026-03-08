@@ -24,3 +24,14 @@ export const centeredCompactInputStyles = {
 export const accordionDarkStyles = {
   item: { backgroundColor: 'var(--mantine-color-dark-7)' },
 };
+
+export const darkDrawerStyles = {
+  body: { padding: 0, height: '100%', display: 'flex' as const, flexDirection: 'column' as const },
+  content: { backgroundColor: 'var(--mantine-color-dark-8)' },
+  header: { backgroundColor: 'var(--mantine-color-dark-8)' },
+};
+
+export const darkCardStyle = {
+  backgroundColor: 'var(--mantine-color-dark-7)',
+  border: '1px solid var(--mantine-color-dark-4)',
+} as const;

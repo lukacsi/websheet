@@ -1,5 +1,31 @@
 # WebSheet — Backlog
 
+## UI Streamlining (from 2026-03-08 audit)
+
+### Done
+- [x] Extract shared style constants (`darkPaperStyle`, `accordionDarkStyles`, 4 input styles, `darkDrawerStyles`, `darkCardStyle`)
+- [x] Extract `numOrDefault` helper
+- [x] Extract `toggleArrayItem` helper (centralized in `form-helpers.ts`)
+- [x] Extract shared `RemoveButton` component
+- [x] Promote `SectionTitle` to shared component
+- [x] Split FeaturesSection into 4 sub-components
+- [x] Fix right sidebar clipping (minmax grid)
+- [x] Decompose CharacterSheet (`useCharacterSheet` hook)
+- [x] Normalize callback signatures (BackstorySection)
+- [x] Replace embedded `<style>` tag with CSS module
+- [x] Remove unused `theme.other` dead code
+- [x] AppShell already uses CSS variables
+- [x] global.css already uses CSS variables
+- [x] `primaryShade` already set
+- [x] `backgroundName` prop already removed
+- [x] `parchmentBgLight` / `textMuted` tokens never existed
+
+### Skipped (with rationale)
+- **Theme component overrides** — `darkPaperStyle`/`accordionDarkStyles` constants work; global defaults risk breaking wizard
+- **useListCrud hook** — add functions too specialized per component
+- **CurrencySection coin colors** — domain-specific, not theme drift
+- **StatBox promotion** — AbilityBlock uses different styling; not worth unifying
+
 ## Schema / Types
 - Add `Feat` type and PocketBase collection (needed for level-up and backgrounds)
 - Add `subraces` PocketBase collection (currently only in TS type, no storage)

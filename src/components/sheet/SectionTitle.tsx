@@ -8,6 +8,7 @@ export function SectionTitle({ children }: { children: ReactNode }) {
       tt="uppercase"
       size="sm"
       c="parchment.4"
+      mt="sm"
       mb="xs"
       pb={4}
       style={{ borderBottom: '1px solid var(--mantine-color-dark-5)' }}
