@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Container, Title, Text, SimpleGrid, Card, Button, Stack, Group, Badge } from '@mantine/core';
+import { Container, Title, Text, SimpleGrid, Card, Button, Stack, Group, Badge, List, ThemeIcon } from '@mantine/core';
+import { IconWand, IconFileText, IconSearch } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 import pb from '@/api/pocketbase';
-import { cardStyle } from '@/theme/styles';
+import { cardStyle, elevatedStyle, glowAccent } from '@/theme/styles';
 
 interface RecentCharacter {
   id: string;
@@ -14,12 +15,13 @@ interface RecentCharacter {
 
 export function Home() {
   const [recent, setRecent] = useState<RecentCharacter[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     pb.collection('characters').getList(1, 8, { sort: '-updated' })
-      .then((res) => { if (!cancelled) setRecent(res.items as unknown as RecentCharacter[]); })
-      .catch(() => {});
+      .then((res) => { if (!cancelled) { setRecent(res.items as unknown as RecentCharacter[]); setLoaded(true); } })
+      .catch(() => { if (!cancelled) setLoaded(true); });
     return () => { cancelled = true; };
   }, []);
 
@@ -27,49 +29,88 @@ export function Home() {
     char.classes?.map((c) => `${c.className} ${c.level}`).join(' / ') || `Lv ${char.level}`;
 
   return (
-    <Container size="lg" py="xl">
-      <Title order={1} ta="center" mb="md">
+    <Container size="md" py="xl">
+      <Title order={2} ta="center" mb={4}>
         WebSheet
       </Title>
-      <Text ta="center" c="parchment.5" mb="xl" size="lg">
+      <Text ta="center" c="parchment.5" mb="xl" size="md">
         D&D 5e Character Manager
       </Text>
 
-      <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg">
-        <Card shadow="sm" padding="lg" style={cardStyle}>
-          <Title order={3} mb="sm">Guided Create</Title>
-          <Text c="parchment.6" mb="md">
-            Step-by-step wizard — pick race, class, background, and abilities with guidance.
-          </Text>
-          <Button component={Link} to="/create" variant="filled">
-            Wizard
+      {/* Hero — Guided Create */}
+      <Card padding="xl" mb="lg" style={{ ...elevatedStyle, ...glowAccent }}>
+        <Group justify="space-between" align="flex-start" wrap="nowrap">
+          <Stack gap="xs" style={{ flex: 1 }}>
+            <Title order={3}>Guided Create</Title>
+            <Text c="parchment.4" size="sm">
+              Step-by-step wizard with race, class, background, and ability selection.
+            </Text>
+            <List
+              size="sm"
+              c="parchment.5"
+              spacing={2}
+              icon={
+                <ThemeIcon size={16} variant="transparent" color="gold">
+                  <IconWand size={12} />
+                </ThemeIcon>
+              }
+            >
+              <List.Item>Choose from 140+ races, classes, and backgrounds</List.Item>
+              <List.Item>Auto-calculated stats, proficiencies, and features</List.Item>
+              <List.Item>Full 5e.tools data with inline wiki previews</List.Item>
+            </List>
+          </Stack>
+          <Button
+            component={Link}
+            to="/create"
+            variant="filled"
+            color="gold"
+            size="md"
+            mt="xs"
+            leftSection={<IconWand size={18} />}
+          >
+            Start Wizard
           </Button>
-        </Card>
+        </Group>
+      </Card>
 
-        <Card shadow="sm" padding="lg" style={cardStyle}>
-          <Title order={3} mb="sm">Quick Create</Title>
-          <Text c="parchment.6" mb="md">
-            Blank character sheet — fill in whatever you want, no rules enforced.
+      {/* Secondary — Quick Create + Load */}
+      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg" mb="xl">
+        <Card padding="lg" style={cardStyle}>
+          <Group gap="xs" mb="xs">
+            <IconFileText size={18} color="var(--mantine-color-parchment-5)" />
+            <Title order={4}>Quick Create</Title>
+          </Group>
+          <Text c="parchment.5" size="sm" mb="md">
+            Blank sheet — fill in whatever you want, no rules enforced.
           </Text>
-          <Button component={Link} to="/character/new" variant="light">
+          <Button component={Link} to="/character/new" variant="outline" size="sm" fullWidth>
             Blank Sheet
           </Button>
         </Card>
 
-        <Card shadow="sm" padding="lg" style={cardStyle}>
-          <Title order={3} mb="sm">Load Character</Title>
-          <Text c="parchment.6" mb="md">
-            Open an existing character sheet by name and passphrase.
+        <Card padding="lg" style={cardStyle}>
+          <Group gap="xs" mb="xs">
+            <IconSearch size={18} color="var(--mantine-color-parchment-5)" />
+            <Title order={4}>Load Character</Title>
+          </Group>
+          <Text c="parchment.5" size="sm" mb="md">
+            Open an existing character by name and passphrase.
           </Text>
-          <Button component={Link} to="/load" variant="light">
+          <Button component={Link} to="/load" variant="outline" size="sm" fullWidth>
             Load Character
           </Button>
         </Card>
       </SimpleGrid>
 
-      {recent.length > 0 && (
-        <Stack mt="xl">
-          <Title order={3}>Recent Characters</Title>
+      {/* Recent Characters — always shown */}
+      <Stack>
+        <Title order={4} c="parchment.5">Recent Characters</Title>
+        {loaded && recent.length === 0 ? (
+          <Text c="parchment.6" size="sm" fs="italic">
+            No characters yet — <Text component={Link} to="/create" c="gold.5" inherit>create your first one</Text>.
+          </Text>
+        ) : (
           <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="sm">
             {recent.map((char) => (
               <Card
@@ -87,8 +128,8 @@ export function Home() {
               </Card>
             ))}
           </SimpleGrid>
-        </Stack>
-      )}
+        )}
+      </Stack>
     </Container>
   );
 }

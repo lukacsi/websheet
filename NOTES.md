@@ -1,5 +1,22 @@
 # Notes — WebSheet
 
+## 2026-03-09 — UX Tickets Implementation (UX-01 through UX-06)
+
+**Context:** 11 UX tickets from review, working through them by priority. 4 of the top 6 done in previous session (UX-01, UX-02, UX-04 already committed), continuing with remaining tickets.
+
+**Decisions:**
+- UX-05 identity row: click-to-edit toggle pattern (WikiLinks default, pencil icon reveals Selects) — first edit-mode pattern in the codebase
+- UX-05 moved edition/XP/alignment/player to About tab under "Character Details" section
+- UX-06 sidebar reorder by gameplay frequency: Senses > Conditions > Hit Dice > Death Saves
+- UX-06 moved Proficiencies & Languages to About tab (was wrapping to 2 lines in sidebar)
+- Hit dice compacted to 2-row layout: display row (badge + remaining) + edit row (labeled inputs)
+
+**Done:**
+- UX-03: Wizard sticky nav bar + empty state prompts + Cinzel name input + cardStyle wrapper
+- UX-05: Header declutter — identity WikiLinks with edit toggle, prominent Rest buttons, clean Save/Create
+- UX-06: Right sidebar polish — larger death saves, compact hit dice, empty states, sidebar reorder
+- 6 of 11 tickets now complete (UX-01 through UX-06, skipping UX-04 done earlier)
+
 ## 2026-03-09 — UX Review + Ticket System
 
 **Context:** UI redesign complete (Phases 1-7), needed professional UX assessment to identify remaining issues.
