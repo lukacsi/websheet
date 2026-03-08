@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Container, Text, TextInput, Group, Stack, Grid, Paper,
@@ -29,11 +30,13 @@ import { PersonalitySection } from '@/components/sheet/PersonalitySection';
 import { AppearanceSection } from '@/components/sheet/AppearanceSection';
 import { BackstorySection } from '@/components/sheet/BackstorySection';
 import { SectionTitle } from '@/components/sheet/SectionTitle';
+import { QuickReference } from '@/components/sheet/QuickReference';
 
 export function CharacterSheet() {
   const { id } = useParams<{ id: string }>();
   const sheet = useCharacterSheet(id);
   const { character, update, loading, dirty, savedId, save } = sheet;
+  const [activeTab, setActiveTab] = useState<string | null>('combat');
 
   if (loading) {
     return (
@@ -220,7 +223,19 @@ export function CharacterSheet() {
             onChange={update}
           />
 
-        <Tabs defaultValue="combat" keepMounted={false} style={{ marginTop: 'var(--mantine-spacing-sm)' }} styles={{
+          <QuickReference
+            attacks={character.attacks}
+            spellcastingAbility={character.spellcastingAbility}
+            abilities={character.abilities}
+            level={character.level}
+            spellSlots={character.spellSlots}
+            resources={character.resources}
+            onSlotsChange={(spellSlots) => update({ spellSlots })}
+            onResourcesChange={(resources) => update({ resources })}
+            onTabChange={(tab) => setActiveTab(tab)}
+          />
+
+        <Tabs value={activeTab} onChange={setActiveTab} keepMounted={false} style={{ marginTop: 'var(--mantine-spacing-sm)' }} styles={{
           root: { display: 'flex', flexDirection: 'column', minHeight: 0 },
           panel: { flex: 1, overflowY: 'auto', paddingTop: 'var(--mantine-spacing-sm)' },
           tab: {

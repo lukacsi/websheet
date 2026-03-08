@@ -196,7 +196,7 @@ Actionable tickets based on the visual UX review (`review/UX-REVIEW.md`). Each i
 | # | Ticket | Impact | Verdict |
 |---|--------|--------|---------|
 | 1 | ~~UX-01~~ | ~~Combat stats = #1 viewed element during play~~ | **Done** |
-| 2 | UX-02 | Combat info behind tabs = worse than paper | **Redesign** |
+| 2 | ~~UX-02~~ | ~~Combat info behind tabs = worse than paper~~ | **Done** |
 | 3 | UX-03 | Wizard nav scrolls off + empty steps look broken | Fix |
 | 4 | ~~UX-04~~ | ~~Inventory overflow = visible layout bug~~ | **Done** |
 | 5 | UX-05 | Header clutter hurts whole sheet perception | Fix |
