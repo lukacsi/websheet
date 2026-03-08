@@ -14,11 +14,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       header={{ height: 56 }}
       styles={{
         header: {
-          backgroundColor: '#1e1a15',
-          borderBottom: '1px solid #3d3227',
+          backgroundColor: 'var(--mantine-color-dark-8)',
+          borderBottom: '1px solid var(--mantine-color-dark-5)',
         },
         main: {
-          backgroundColor: '#1a1612',
+          backgroundColor: 'var(--mantine-color-dark-9)',
         },
       }}
     >

@@ -5,8 +5,8 @@
 }
 
 body {
-  background-color: #1a1612;
-  color: #e3d5be;
+  background-color: var(--mantine-color-dark-9);
+  color: var(--mantine-color-parchment-2);
   margin: 0;
 }
 
@@ -16,14 +16,14 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1a1612;
+  background: var(--mantine-color-dark-9);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3d3227;
+  background: var(--mantine-color-dark-5);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4d4237;
+  background: var(--mantine-color-dark-4);
 }

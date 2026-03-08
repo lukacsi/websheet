@@ -28,6 +28,7 @@ const inkBrown: MantineColorsTuple = [
 
 export const theme = createTheme({
   primaryColor: 'inkBrown',
+  primaryShade: { light: 6, dark: 6 },
   colors: {
     parchment,
     inkBrown,
@@ -39,8 +40,6 @@ export const theme = createTheme({
   defaultRadius: 'sm',
   other: {
     parchmentBg: '#1a1612',
-    parchmentBgLight: '#2a2219',
     parchmentBorder: '#3d3227',
-    textMuted: '#8a7e6e',
   },
 });
