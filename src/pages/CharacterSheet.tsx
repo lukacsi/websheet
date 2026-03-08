@@ -3,8 +3,9 @@ import {
   Container, Text, TextInput, Group, Stack, Grid, Paper,
   LoadingOverlay, Button, Checkbox, Select, NumberInput, Tabs,
 } from '@mantine/core';
+import { IconMoon, IconCampfire } from '@tabler/icons-react';
 import { numOrDefault } from '@/utils/form-helpers';
-import { darkPaperStyle } from '@/theme/styles';
+import { surfaceStyle } from '@/theme/styles';
 import { WikiLink } from '@/components/wiki/WikiLink';
 import { useCharacterSheet } from '@/hooks/useCharacterSheet';
 import styles from './CharacterSheet.module.css';
@@ -45,7 +46,7 @@ export function CharacterSheet() {
   return (
     <Container fluid px="md" py={0}>
       {/* ── Header ── */}
-      <Paper p="xs" mb="xs" style={darkPaperStyle}>
+      <Paper p="xs" mb="xs" style={surfaceStyle}>
         <Grid gutter="xs">
           <Grid.Col span={{ base: 12, sm: 2.5 }}>
             <TextInput
@@ -53,7 +54,7 @@ export function CharacterSheet() {
               onChange={(e) => update({ name: e.currentTarget.value })}
               size="sm"
               placeholder="Character Name"
-              styles={{ input: { fontFamily: 'Cinzel, serif', fontWeight: 700, fontSize: 18 } }}
+              styles={{ input: { fontFamily: 'Cinzel, serif', fontWeight: 700, fontSize: 22, color: 'var(--mantine-color-gold-3)' } }}
             />
           </Grid.Col>
           <Grid.Col span={{ base: 6, sm: 2 }}>
@@ -71,7 +72,7 @@ export function CharacterSheet() {
                 <Group gap={4}>
                   <WikiLink tagType="race" name={character.raceName} />
                   {character.subraceName && (
-                    <Text size="xs" c="dimmed">({character.subraceName})</Text>
+                    <Text size="xs" c="parchment.6">({character.subraceName})</Text>
                   )}
                 </Group>
               )}
@@ -145,7 +146,7 @@ export function CharacterSheet() {
           </Grid.Col>
         </Grid>
 
-        <Group gap="sm" mt={4}>
+        <Group gap="sm" mt={4} pt={6} style={{ borderTop: '1px solid rgba(191, 157, 100, 0.1)' }}>
           <Checkbox
             label="Inspiration"
             checked={character.inspiration}
@@ -170,17 +171,17 @@ export function CharacterSheet() {
             w={90}
             placeholder="XP"
           />
-          <Button size="compact-xs" variant="light" color="teal" onClick={sheet.shortRest}>
+          <Button size="compact-xs" variant="light" color="parchment" onClick={sheet.shortRest} leftSection={<IconMoon size={14} />}>
             Short Rest
           </Button>
-          <Button size="compact-xs" variant="light" color="blue" onClick={sheet.longRest}>
+          <Button size="compact-xs" variant="light" color="gold" onClick={sheet.longRest} leftSection={<IconCampfire size={14} />}>
             Long Rest
           </Button>
           <div style={{ flex: 1 }} />
-          <Text size="xs" c={dirty ? 'yellow' : 'dimmed'}>
+          <Text size="xs" c={dirty ? 'gold.4' : 'parchment.6'}>
             {dirty ? 'Unsaved...' : (savedId ? 'Saved' : 'New')}
           </Text>
-          <Button size="compact-xs" variant="light" onClick={() => save(character)}>
+          <Button size="compact-xs" variant={dirty ? 'filled' : 'light'} color={dirty ? 'gold' : undefined} onClick={() => save(character)}>
             {savedId ? 'Save' : 'Create'}
           </Button>
         </Group>

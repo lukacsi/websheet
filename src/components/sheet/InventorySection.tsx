@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Stack, Table, TextInput, NumberInput, Checkbox, Group, Button, Select } from '@mantine/core';
+import { Stack, Table, TextInput, NumberInput, Checkbox, Group, Button, Select, Text } from '@mantine/core';
 import type { CharacterItem } from '@/types';
 import { WikiLink } from '@/components/wiki/WikiLink';
 import { useItems } from '@/hooks/useItems';
@@ -50,7 +50,7 @@ export function InventorySection({ items, attunementSlots, onChange, onAttunemen
     <Stack gap="xs">
       <Group gap="xs">
         <NumberInput
-          label="Attunement Slots"
+          label={<Text size="xs" fw={600} c="parchment.5">Attunement Slots</Text>}
           value={attunementSlots}
           onChange={(v) => onAttunementChange(numOrDefault(v, 3))}
           min={0}
@@ -60,7 +60,7 @@ export function InventorySection({ items, attunementSlots, onChange, onAttunemen
           styles={centeredInputStyles}
         />
         <NumberInput
-          label="Used"
+          label={<Text size="xs" fw={600} c="parchment.5">Used</Text>}
           value={attunedCount}
           readOnly
           size="xs"
@@ -83,18 +83,24 @@ export function InventorySection({ items, attunementSlots, onChange, onAttunemen
 
       {items.length > 0 && (
         <Table withRowBorders verticalSpacing={2} horizontalSpacing="xs" fz="sm">
-          <Table.Thead>
+          <Table.Thead style={{ borderBottom: '1px solid rgba(191, 157, 100, 0.15)' }}>
             <Table.Tr>
-              <Table.Th>Item</Table.Th>
-              <Table.Th w={50} ta="center">Qty</Table.Th>
-              <Table.Th w={30} ta="center" title="Equipped">E</Table.Th>
-              <Table.Th w={30} ta="center" title="Attuned">A</Table.Th>
+              <Table.Th><Text size="xs" fw={600} c="parchment.5" tt="uppercase" style={{ letterSpacing: '0.5px' }}>Item</Text></Table.Th>
+              <Table.Th w={50} ta="center"><Text size="xs" fw={600} c="parchment.5" tt="uppercase" style={{ letterSpacing: '0.5px' }}>Qty</Text></Table.Th>
+              <Table.Th w={30} ta="center" title="Equipped"><Text size="xs" fw={600} c="parchment.5" tt="uppercase" style={{ letterSpacing: '0.5px' }}>E</Text></Table.Th>
+              <Table.Th w={30} ta="center" title="Attuned"><Text size="xs" fw={600} c="parchment.5" tt="uppercase" style={{ letterSpacing: '0.5px' }}>A</Text></Table.Th>
               <Table.Th w={30}></Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
             {items.map((item, i) => (
-              <Table.Tr key={i}>
+              <Table.Tr key={i} style={
+                item.attuned
+                  ? { borderLeft: '2px solid var(--mantine-color-gold-5)' }
+                  : item.equipped
+                    ? { borderLeft: '2px solid var(--mantine-color-inkBrown-7)' }
+                    : undefined
+              }>
                 <Table.Td>
                   {item.itemId ? (
                     <Group gap={4}>

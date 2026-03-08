@@ -28,7 +28,7 @@ export function FallbackDetail({ tagType, data }: Props) {
           <EntryRenderer entries={entries} />
         </>
       ) : (
-        <Text c="dimmed" size="sm" mt="md">
+        <Text c="parchment.6" size="sm" mt="md">
           Detailed data for this {tagType} is not available yet.
         </Text>
       )}

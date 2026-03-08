@@ -3,7 +3,7 @@ import type { AbilityKey, AbilityScores, SpellSlots } from '@/types';
 import { ABILITY_NAMES } from '@/types';
 import { spellSaveDc, spellAttackBonus, formatModifier } from '@/utils/derived-stats';
 import { numOrDefault } from '@/utils/form-helpers';
-import { darkPaperStyle, centeredCompactInputStyles } from '@/theme/styles';
+import { elevatedStyle, centeredCompactInputStyles } from '@/theme/styles';
 
 const SLOT_LABELS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th'];
 
@@ -63,14 +63,14 @@ export function SpellcastingSection({
           w={140}
         />
         {dc !== null && (
-          <Paper p="xs" ta="center" style={darkPaperStyle}>
-            <Text size="xs" c="dimmed">Spell Save DC</Text>
+          <Paper p="xs" ta="center" style={elevatedStyle}>
+            <Text size="xs" c="parchment.5">Spell Save DC</Text>
             <Text fw={700} size="lg">{dc}</Text>
           </Paper>
         )}
         {atk !== null && (
-          <Paper p="xs" ta="center" style={darkPaperStyle}>
-            <Text size="xs" c="dimmed">Spell Attack</Text>
+          <Paper p="xs" ta="center" style={elevatedStyle}>
+            <Text size="xs" c="parchment.5">Spell Attack</Text>
             <Text fw={700} size="lg">{formatModifier(atk)}</Text>
           </Paper>
         )}
@@ -78,10 +78,10 @@ export function SpellcastingSection({
 
       {hasCasting && (
         <Table withTableBorder withColumnBorders verticalSpacing={4} horizontalSpacing="xs">
-          <Table.Thead>
+          <Table.Thead style={{ borderBottom: '1px solid rgba(191, 157, 100, 0.15)' }}>
             <Table.Tr>
               {SLOT_LABELS.slice(0, highestSlotLevel).map((label, i) => (
-                <Table.Th key={i} ta="center" fz="xs">{label}</Table.Th>
+                <Table.Th key={i} ta="center"><Text size="xs" fw={600} c="parchment.5">{label}</Text></Table.Th>
               ))}
             </Table.Tr>
           </Table.Thead>
@@ -102,8 +102,8 @@ export function SpellcastingSection({
             </Table.Tr>
             <Table.Tr>
               {used.slice(0, highestSlotLevel).map((u, i) => (
-                <Table.Td key={i} ta="center" p={2}>
-                  <Text size="xs" c="dimmed" mb={2}>used</Text>
+                <Table.Td key={i} ta="center" p={2} style={u >= max[i] && max[i] > 0 ? { opacity: 0.5 } : undefined}>
+                  <Text size="xs" c="parchment.6" mb={2}>used</Text>
                   <NumberInput
                     value={u}
                     onChange={(v) => setUsed(i, numOrDefault(v, 0))}

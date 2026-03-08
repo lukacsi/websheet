@@ -1,5 +1,50 @@
 # Notes — WebSheet
 
+## 2026-03-08 — Phase 7: Final Polish — Full App Color Harmonization
+
+**Context:** Phases 1-6 themed all sheet components, but pages, wiki drawers, create wizard, and global component defaults still used Mantine blue/green/orange defaults and `c="dimmed"` text.
+
+**Decisions:**
+- Theme-level component overrides for Select (warm dropdown), Loader (gold), Notification/Alert (warm containers), SegmentedControl (warm indicator) — fixes all instances app-wide without per-component edits
+- LoadCharacter passphrase card switched from inline style to shared `elevatedStyle` constant
+- `c="dimmed"` distinction maintained: `parchment.5` for structural labels (StepReview field names), `parchment.6` for secondary/supplementary text (descriptions, fallbacks, em-dashes)
+
+**Done:**
+- 22 files modified: theme index, 4 pages, 10 wiki components (including bonus ClassDetail.tsx), 7 create flow components
+- Zero `c="dimmed"` remaining in entire codebase
+- Zero hardcoded Mantine color names (`blue`/`green`/`orange`/`yellow`/`red`) remaining (CreatureDetail `red.8` dividers preserved — intentional statblock convention)
+- Type-check clean
+- UI redesign Phases 1-7 complete
+
+## 2026-03-08 — Phases 5-6: Sheet Components Fully Themed
+
+**Context:** Phases 1-4 had styled theme foundation, layout, core stats, and gameplay. Remaining sheet components (inventory, resources, spellcasting slots, currency, proficiencies, personality, backstory, notes, appearance) still used default Mantine styling. Badge/button colors and `c="dimmed"` text were inconsistent across all sheet components.
+
+**Decisions:**
+- Badge color system established: `inkBrown` for source/category, `gold` for special/notable, `bloodRed` for danger/failure, `parchment` for neutral
+- `c="dimmed"` replaced with `parchment.5` (structural labels) or `parchment.6` (secondary/supplementary text) — semantic distinction
+- Spell school colors remapped to theme while preserving identity (Abjuration→inkBrown, Evocation→bloodRed, Transmutation→gold; Conjuration/Enchantment/Illusion/Necromancy kept)
+- Text-heavy sections use `variant="unstyled"` textareas + warm uppercase labels — consistent with inline-editing pattern
+
+**Done:**
+- Phase 5: 5 files — warm table headers, equipped/attuned row borders, depleted resource dimming, theme-var coin colors, warm proficiency labels
+- Phase 6: 18 files — warm textarea labels, unstyled textareas, portrait card border, school color remap, RemoveButton→bloodRed, DeathSaves→bloodRed, all feature badges→inkBrown/gold, zero `c="dimmed"` remaining in sheet components, zero hardcoded Mantine color names in sheet components
+- Phase 7 prompt written (`.claude/phase7-prompt.md`) — covers remaining pages, wiki details, create flow, theme-level overrides
+- Type-check clean after all changes
+
+## 2026-03-08 — UI Audit Complete + Redesign Brief
+
+**Context:** 10-batch UI audit complete. All 16 audit items resolved (done or explicitly skipped). Codebase is clean — shared style constants, extracted hooks, decomposed components, CSS modules, no dead code.
+
+**Decisions:**
+- Skipped 4 items with rationale: theme component overrides (risk to wizard), useListCrud (too specialized), CurrencySection colors (domain-specific), StatBox promotion (styling differs)
+- Next step: full visual redesign. Wrote comprehensive prompt at `docs/redesign-prompt.md` covering all pages, components, constraints, and design direction ("fantasy-functional")
+
+**Done:**
+- Batch 10: CSS module for CharacterSheet layout, `darkDrawerStyles`/`darkCardStyle` constants, dead `theme.other` removal, FUTURE.md audit section finalized
+- Batches 7-10 committed (30 files, net -788 lines)
+- Redesign prompt written — ready for a fresh session
+
 ## 2026-03-08 — UI Audit & Streamlining Plan
 
 **Context:** Full audit of the character sheet UI — all 19 sheet components, 4 pages, AppShell, theme config. Goal: identify redundancy, inconsistency, complexity, UX friction, and theme drift before streamlining.

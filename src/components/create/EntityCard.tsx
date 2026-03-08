@@ -1,7 +1,7 @@
 import { Card, Text, Group, Badge, Stack, Divider } from '@mantine/core';
 import { EntryRenderer } from './EntryRenderer';
 import type { Entry } from '@/types';
-import { darkCardStyle } from '@/theme/styles';
+import { cardStyle } from '@/theme/styles';
 
 interface EntityCardProps {
   name: string;
@@ -16,12 +16,12 @@ export function EntityCard({ name, source, badges, entries, children }: EntityCa
     <Card
       padding="md"
       radius="sm"
-      style={darkCardStyle}
+      style={cardStyle}
     >
       <Stack gap="sm">
         <Group justify="space-between">
           <Text fw={700} size="lg">{name}</Text>
-          <Text size="xs" c="dimmed">{source}</Text>
+          <Text size="xs" c="parchment.6">{source}</Text>
         </Group>
 
         {badges && badges.length > 0 && (

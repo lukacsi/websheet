@@ -1,4 +1,4 @@
-import { Stack, Table, TextInput, Button, Menu } from '@mantine/core';
+import { Stack, Table, TextInput, Button, Menu, Text } from '@mantine/core';
 import type { CharacterAttack, CharacterItem, AbilityScores } from '@/types';
 import { WikiLink } from '@/components/wiki/WikiLink';
 import { useItems } from '@/hooks/useItems';
@@ -71,17 +71,17 @@ export function AttacksSection({ attacks, items, abilities, level, onChange }: P
     <Stack gap="xs">
       {attacks.length > 0 && (
         <Table withRowBorders verticalSpacing={2} horizontalSpacing="xs" fz="sm">
-          <Table.Thead>
+          <Table.Thead style={{ borderBottom: '1px solid rgba(191, 157, 100, 0.15)' }}>
             <Table.Tr>
-              <Table.Th>Name</Table.Th>
-              <Table.Th w={80} ta="center">Atk Bonus</Table.Th>
-              <Table.Th>Damage/Type</Table.Th>
+              <Table.Th><Text size="xs" fw={600} c="parchment.5" tt="uppercase" style={{ letterSpacing: '0.5px' }}>Name</Text></Table.Th>
+              <Table.Th w={80} ta="center"><Text size="xs" fw={600} c="parchment.5" tt="uppercase" style={{ letterSpacing: '0.5px' }}>Atk Bonus</Text></Table.Th>
+              <Table.Th><Text size="xs" fw={600} c="parchment.5" tt="uppercase" style={{ letterSpacing: '0.5px' }}>Damage/Type</Text></Table.Th>
               <Table.Th w={30} />
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
             {attacks.map((attack, i) => (
-              <Table.Tr key={i}>
+              <Table.Tr key={i} style={attack.itemId ? { borderLeft: '2px solid var(--mantine-color-inkBrown-8)' } : undefined}>
                 <Table.Td>
                   {attack.itemId ? (
                     <WikiLink tagType="item" name={attack.name} />
@@ -132,7 +132,7 @@ export function AttacksSection({ attacks, items, abilities, level, onChange }: P
         {equippedWeapons.length > 0 && (
           <Menu position="bottom-start" withinPortal>
             <Menu.Target>
-              <Button size="compact-xs" variant="subtle" color="teal">
+              <Button size="compact-xs" variant="subtle" color="gold">
                 + From weapon
               </Button>
             </Menu.Target>

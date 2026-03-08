@@ -7,7 +7,7 @@ import {
 import { notifications } from '@mantine/notifications';
 import pb from '@/api/pocketbase';
 import { verifyPassphrase } from '@/utils/passphrase';
-import { darkPaperStyle } from '@/theme/styles';
+import { cardStyle, elevatedStyle } from '@/theme/styles';
 
 interface CharacterSummary {
   id: string;
@@ -67,7 +67,7 @@ export function LoadCharacter() {
       if (match) {
         navigate(`/character/${promptChar.id}`);
       } else {
-        notifications.show({ title: 'Wrong passphrase', message: 'Try again', color: 'red' });
+        notifications.show({ title: 'Wrong passphrase', message: 'Try again', color: 'bloodRed' });
       }
     } finally {
       setVerifying(false);
@@ -97,7 +97,7 @@ export function LoadCharacter() {
       {loading && <Loader size="sm" />}
 
       {!loading && searched && results.length === 0 && (
-        <Text c="dimmed">No characters found.</Text>
+        <Text c="parchment.6">No characters found.</Text>
       )}
 
       <Stack gap="sm">
@@ -105,16 +105,16 @@ export function LoadCharacter() {
           <Card
             key={char.id}
             padding="md"
-            style={{ ...darkPaperStyle, cursor: 'pointer' }}
+            style={{ ...cardStyle, cursor: 'pointer' }}
             onClick={() => handleSelect(char)}
           >
             <Group justify="space-between">
               <div>
                 <Text fw={700} size="lg">{char.name}</Text>
                 <Group gap="xs" mt={4}>
-                  <Badge size="sm" variant="light" color="blue">{classLabel(char)}</Badge>
-                  {char.raceName && <Badge size="sm" variant="light" color="green">{char.raceName}</Badge>}
-                  {char.backgroundName && <Badge size="sm" variant="light" color="orange">{char.backgroundName}</Badge>}
+                  <Badge size="sm" variant="light" color="inkBrown">{classLabel(char)}</Badge>
+                  {char.raceName && <Badge size="sm" variant="light" color="gold">{char.raceName}</Badge>}
+                  {char.backgroundName && <Badge size="sm" variant="light" color="parchment">{char.backgroundName}</Badge>}
                 </Group>
               </div>
               {char.passphraseHash && (
@@ -130,10 +130,7 @@ export function LoadCharacter() {
         <Card
           padding="lg"
           mt="lg"
-          style={{
-            backgroundColor: 'var(--mantine-color-dark-6)',
-            border: '2px solid var(--mantine-color-parchment-6)',
-          }}
+          style={elevatedStyle}
         >
           <Text fw={600} mb="sm">Enter passphrase for {promptChar.name}</Text>
           <Group gap="xs">

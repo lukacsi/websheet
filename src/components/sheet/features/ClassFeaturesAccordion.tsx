@@ -6,7 +6,7 @@ import {
   findOptionsBlocks,
   stripOptionsEntries,
 } from '@/components/create/FeatureChoicePicker';
-import { accordionDarkStyles } from '@/theme/styles';
+import { accordionStyles } from '@/theme/styles';
 
 interface Props {
   features: ClassFeatureRecord[];
@@ -16,7 +16,7 @@ interface Props {
 
 export function ClassFeaturesAccordion({ features, featureChoices, onFeatureChoicesChange }: Props) {
   return (
-    <Accordion variant="separated" chevronPosition="left" styles={accordionDarkStyles}>
+    <Accordion variant="separated" chevronPosition="left" styles={accordionStyles}>
       {features.map((f) => {
         const hasOptions = findOptionsBlocks(f.name, f.entries).length > 0;
         const selected = featureChoices[f.name] ?? [];
@@ -24,17 +24,17 @@ export function ClassFeaturesAccordion({ features, featureChoices, onFeatureChoi
           <Accordion.Item key={f.id} value={f.id}>
             <Accordion.Control>
               <Group gap="xs">
-                <Badge size="xs" variant="light" color="blue">
+                <Badge size="xs" variant="light" color="inkBrown">
                   Lv {f.level}
                 </Badge>
                 {f.isSubclassFeature && (
-                  <Badge size="xs" variant="light" color="grape">
+                  <Badge size="xs" variant="light" color="gold">
                     {f.subclassName}
                   </Badge>
                 )}
                 <Text size="sm" fw={600}>{f.name}</Text>
                 {hasOptions && selected.length === 0 && (
-                  <Badge size="xs" variant="light" color="yellow">Choice needed</Badge>
+                  <Badge size="xs" variant="light" color="gold">Choice needed</Badge>
                 )}
               </Group>
             </Accordion.Control>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Container, Title, Text, SimpleGrid, Card, Button, Stack, Group, Badge } from '@mantine/core';
 import { Link } from 'react-router-dom';
 import pb from '@/api/pocketbase';
-import { darkPaperStyle } from '@/theme/styles';
+import { cardStyle } from '@/theme/styles';
 
 interface RecentCharacter {
   id: string;
@@ -31,14 +31,14 @@ export function Home() {
       <Title order={1} ta="center" mb="md">
         WebSheet
       </Title>
-      <Text ta="center" c="dimmed" mb="xl" size="lg">
+      <Text ta="center" c="parchment.5" mb="xl" size="lg">
         D&D 5e Character Manager
       </Text>
 
       <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg">
-        <Card shadow="sm" padding="lg" style={darkPaperStyle}>
+        <Card shadow="sm" padding="lg" style={cardStyle}>
           <Title order={3} mb="sm">Guided Create</Title>
-          <Text c="dimmed" mb="md">
+          <Text c="parchment.6" mb="md">
             Step-by-step wizard — pick race, class, background, and abilities with guidance.
           </Text>
           <Button component={Link} to="/create" variant="filled">
@@ -46,9 +46,9 @@ export function Home() {
           </Button>
         </Card>
 
-        <Card shadow="sm" padding="lg" style={darkPaperStyle}>
+        <Card shadow="sm" padding="lg" style={cardStyle}>
           <Title order={3} mb="sm">Quick Create</Title>
-          <Text c="dimmed" mb="md">
+          <Text c="parchment.6" mb="md">
             Blank character sheet — fill in whatever you want, no rules enforced.
           </Text>
           <Button component={Link} to="/character/new" variant="light">
@@ -56,9 +56,9 @@ export function Home() {
           </Button>
         </Card>
 
-        <Card shadow="sm" padding="lg" style={darkPaperStyle}>
+        <Card shadow="sm" padding="lg" style={cardStyle}>
           <Title order={3} mb="sm">Load Character</Title>
-          <Text c="dimmed" mb="md">
+          <Text c="parchment.6" mb="md">
             Open an existing character sheet by name and passphrase.
           </Text>
           <Button component={Link} to="/load" variant="light">
@@ -77,12 +77,12 @@ export function Home() {
                 component={Link}
                 to={`/character/${char.id}`}
                 padding="sm"
-                style={{ ...darkPaperStyle, textDecoration: 'none' }}
+                style={{ ...cardStyle, textDecoration: 'none' }}
               >
                 <Text fw={600} truncate>{char.name || 'Unnamed'}</Text>
                 <Group gap={4} mt={4}>
-                  <Badge size="xs" variant="light" color="blue">{classLabel(char)}</Badge>
-                  {char.raceName && <Badge size="xs" variant="light" color="green">{char.raceName}</Badge>}
+                  <Badge size="xs" variant="light" color="inkBrown">{classLabel(char)}</Badge>
+                  {char.raceName && <Badge size="xs" variant="light" color="gold">{char.raceName}</Badge>}
                 </Group>
               </Card>
             ))}

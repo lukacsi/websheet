@@ -85,7 +85,7 @@ function renderDisplayTag(tagType: DisplayTagType, value: string, extra?: string
     // Other
     case 'note':
     case 'tip':
-      return <Text key={key} component="span" size="sm" c="dimmed" fs="italic">{value}</Text>;
+      return <Text key={key} component="span" size="sm" c="parchment.6" fs="italic">{value}</Text>;
     case 'status':
     case 'filter':
     case 'unit':

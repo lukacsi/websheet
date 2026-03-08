@@ -8,6 +8,29 @@ body {
   background-color: var(--mantine-color-dark-9);
   color: var(--mantine-color-parchment-2);
   margin: 0;
+  /* Subtle noise texture — breaks the flat digital feel */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='transparent'/%3E%3Crect width='1' height='1' x='1' y='0' fill='rgba(255,255,255,0.012)'/%3E%3Crect width='1' height='1' x='3' y='2' fill='rgba(255,255,255,0.008)'/%3E%3Crect width='1' height='1' x='0' y='3' fill='rgba(255,255,255,0.015)'/%3E%3C/svg%3E");
+}
+
+/* Warm focus ring */
+*:focus-visible {
+  outline: 2px solid rgba(191, 157, 100, 0.5) !important;
+  outline-offset: 2px;
+}
+
+/* Selection color */
+::selection {
+  background-color: rgba(191, 157, 100, 0.25);
+  color: var(--mantine-color-parchment-1);
+}
+
+/* Smooth transitions on interactive elements */
+button,
+input,
+select,
+textarea,
+a {
+  transition: background-color 0.15s, box-shadow 0.15s, border-color 0.15s;
 }
 
 /* Scrollbar styling */
@@ -20,10 +43,16 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--mantine-color-dark-5);
+  background: var(--mantine-color-inkBrown-8);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--mantine-color-dark-4);
+  background: var(--mantine-color-inkBrown-6);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--mantine-color-inkBrown-8) var(--mantine-color-dark-9);
 }

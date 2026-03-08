@@ -28,7 +28,7 @@ export function AppearanceSection({ appearance, portraitUrl, onChange, onPortrai
         {FIELDS.map(({ key, label }) => (
           <TextInput
             key={key}
-            label={label}
+            label={<Text size="xs" fw={600} c="parchment.5">{label}</Text>}
             value={appearance[key]}
             onChange={(e) => updateField(key, e.currentTarget.value)}
             size="xs"
@@ -39,7 +39,7 @@ export function AppearanceSection({ appearance, portraitUrl, onChange, onPortrai
 
       <Group gap="md" align="flex-start">
         <TextInput
-          label="Portrait URL"
+          label={<Text size="xs" fw={600} c="parchment.5">Portrait URL</Text>}
           value={portraitUrl ?? ''}
           onChange={(e) => onPortraitChange(e.currentTarget.value)}
           size="xs"
@@ -53,12 +53,13 @@ export function AppearanceSection({ appearance, portraitUrl, onChange, onPortrai
             w={80}
             h={80}
             radius="sm"
+            style={{ border: '1px solid var(--mantine-color-dark-5)' }}
             fallbackSrc=""
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
         )}
         {!portraitUrl && (
-          <Text size="xs" c="dimmed" mt={24}>No portrait</Text>
+          <Text size="xs" c="parchment.6" mt={24}>No portrait</Text>
         )}
       </Group>
     </Stack>

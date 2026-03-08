@@ -12,7 +12,7 @@ export function RemoveButton({ onClick, variant = 'icon', title = 'Remove' }: Re
       <Badge
         size="xs"
         variant="light"
-        color="red"
+        color="bloodRed"
         style={{ cursor: 'pointer' }}
         onClick={onClick}
         title={title}
@@ -23,7 +23,7 @@ export function RemoveButton({ onClick, variant = 'icon', title = 'Remove' }: Re
   }
 
   return (
-    <ActionIcon size="xs" variant="subtle" color="red" onClick={onClick} title={title}>
+    <ActionIcon size="xs" variant="subtle" color="bloodRed" onClick={onClick} title={title}>
       &times;
     </ActionIcon>
   );

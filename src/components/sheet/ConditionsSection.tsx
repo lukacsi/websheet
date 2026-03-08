@@ -40,7 +40,7 @@ export function ConditionsSection({ conditions, edition, exhaustionLevel = 0, on
                 w={45}
                 styles={centeredCompactInputStyles}
               />
-              <Text size="xs" c="dimmed">/ {maxExhaustion}</Text>
+              <Text size="xs" c="parchment.6">/ {maxExhaustion}</Text>
             </Group>
           )}
           <RemoveButton

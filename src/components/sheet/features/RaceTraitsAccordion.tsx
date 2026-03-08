@@ -11,7 +11,7 @@ import {
   findListChoiceBlocks,
   stripListChoiceEntries,
 } from '@/utils/features';
-import { accordionDarkStyles } from '@/theme/styles';
+import { accordionStyles } from '@/theme/styles';
 
 interface Props {
   raceTraits: RaceTraits;
@@ -38,17 +38,17 @@ export function RaceTraitsAccordion({ raceTraits, raceName, featureChoices, onFe
   }
 
   return (
-    <Accordion variant="separated" chevronPosition="left" styles={accordionDarkStyles}>
+    <Accordion variant="separated" chevronPosition="left" styles={accordionStyles}>
       <Accordion.Item value="race-traits">
         <Accordion.Control>
           <Group gap="xs">
-            <Badge size="xs" variant="light" color="green">Race</Badge>
+            <Badge size="xs" variant="light" color="inkBrown">Race</Badge>
             <Text size="sm" fw={600}>{raceName} Traits</Text>
             {hasChoices && !hasRefOptions && listChoices.some((lc) => !(featureChoices[`race:${lc.parentName}`]?.[0])) && (
-              <Badge size="xs" variant="light" color="yellow">Choice needed</Badge>
+              <Badge size="xs" variant="light" color="gold">Choice needed</Badge>
             )}
             {hasRefOptions && refSelected.length === 0 && (
-              <Badge size="xs" variant="light" color="yellow">Choice needed</Badge>
+              <Badge size="xs" variant="light" color="gold">Choice needed</Badge>
             )}
           </Group>
         </Accordion.Control>

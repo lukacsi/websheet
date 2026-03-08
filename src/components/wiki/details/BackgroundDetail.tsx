@@ -31,7 +31,7 @@ export function BackgroundDetail({ data }: Props) {
         <Group gap="xs">
           <Text size="sm" fw={600}>Feat:</Text>
           {bg.feats.map(f => (
-            <Badge key={f} size="xs" variant="light" color="yellow">
+            <Badge key={f} size="xs" variant="light" color="gold">
               {f.split('|')[0].replace(/\b\w/g, c => c.toUpperCase())}
             </Badge>
           ))}

@@ -32,12 +32,12 @@ export function StepReview() {
       {/* Identity */}
       <Group gap="lg">
         <Stack gap={2}>
-          <Text size="xs" c="dimmed">Name</Text>
+          <Text size="xs" c="parchment.5">Name</Text>
           <Text fw={600}>{form.name || '\u2014'}</Text>
         </Stack>
         {form.playerName && (
           <Stack gap={2}>
-            <Text size="xs" c="dimmed">Player</Text>
+            <Text size="xs" c="parchment.5">Player</Text>
             <Text>{form.playerName}</Text>
           </Stack>
         )}
@@ -46,15 +46,15 @@ export function StepReview() {
       {/* Class, Background, Species */}
       <Group gap="lg">
         <Stack gap={2}>
-          <Text size="xs" c="dimmed">Class</Text>
+          <Text size="xs" c="parchment.5">Class</Text>
           <Text fw={500}>{cls?.name ?? '\u2014'} (Level 1)</Text>
         </Stack>
         <Stack gap={2}>
-          <Text size="xs" c="dimmed">Background</Text>
+          <Text size="xs" c="parchment.5">Background</Text>
           <Text fw={500}>{background?.name ?? '\u2014'}</Text>
         </Stack>
         <Stack gap={2}>
-          <Text size="xs" c="dimmed">Species</Text>
+          <Text size="xs" c="parchment.5">Species</Text>
           <Text fw={500}>{race?.name ?? '\u2014'}</Text>
         </Stack>
       </Group>
@@ -64,24 +64,24 @@ export function StepReview() {
       {/* Combat stats */}
       <Group gap="lg">
         <Stack gap={2}>
-          <Text size="xs" c="dimmed">HP</Text>
+          <Text size="xs" c="parchment.5">HP</Text>
           <Text fw={700} size="lg">{hp}</Text>
         </Stack>
         <Stack gap={2}>
-          <Text size="xs" c="dimmed">AC</Text>
+          <Text size="xs" c="parchment.5">AC</Text>
           <Text fw={700} size="lg">{ac}</Text>
         </Stack>
         <Stack gap={2}>
-          <Text size="xs" c="dimmed">Initiative</Text>
+          <Text size="xs" c="parchment.5">Initiative</Text>
           <Text fw={700} size="lg">{formatModifier(initiative)}</Text>
         </Stack>
         <Stack gap={2}>
-          <Text size="xs" c="dimmed">Prof. Bonus</Text>
+          <Text size="xs" c="parchment.5">Prof. Bonus</Text>
           <Text fw={700} size="lg">{formatModifier(profBonus)}</Text>
         </Stack>
         {cls && (
           <Stack gap={2}>
-            <Text size="xs" c="dimmed">Hit Die</Text>
+            <Text size="xs" c="parchment.5">Hit Die</Text>
             <Text fw={700} size="lg">d{cls.hitDie}</Text>
           </Stack>
         )}
@@ -108,7 +108,7 @@ export function StepReview() {
                 <Table.Td><Text fw={500}>{ABILITY_NAMES[ability]}</Text></Table.Td>
                 <Table.Td ta="center"><Text>{form.baseAbilities[ability]}</Text></Table.Td>
                 <Table.Td ta="center">
-                  {bonus > 0 ? <Text c="inkBrown">+{bonus}</Text> : <Text c="dimmed">{'\u2014'}</Text>}
+                  {bonus > 0 ? <Text c="inkBrown">+{bonus}</Text> : <Text c="parchment.6">{'\u2014'}</Text>}
                 </Table.Td>
                 <Table.Td ta="center"><Text fw={600}>{abilities[ability]}</Text></Table.Td>
                 <Table.Td ta="center"><Text>{formatModifier(abilityModifier(abilities[ability]))}</Text></Table.Td>
@@ -144,7 +144,7 @@ export function StepReview() {
       {/* Passphrase */}
       <Stack gap="xs">
         <Text size="sm" fw={500}>Set a passphrase to protect this character</Text>
-        <Text size="xs" c="dimmed">
+        <Text size="xs" c="parchment.6">
           You'll need this passphrase to load and edit your character later.
         </Text>
         <PasswordInput

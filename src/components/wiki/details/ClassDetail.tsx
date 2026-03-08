@@ -263,12 +263,12 @@ export function ClassDetail({ data }: Props) {
                       <Title order={5} c="orange">
                         Level {level}: {ref.name}
                       </Title>
-                      <Text size="xs" c="dimmed">{cls.source}</Text>
+                      <Text size="xs" c="parchment.6">{cls.source}</Text>
                     </Group>
                     {feature?.entries?.length ? (
                       <EntryRenderer entries={feature.entries as Entry[]} />
                     ) : (
-                      <Text size="sm" c="dimmed">Details not available.</Text>
+                      <Text size="sm" c="parchment.6">Details not available.</Text>
                     )}
                   </Stack>
                 );

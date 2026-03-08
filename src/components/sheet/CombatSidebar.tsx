@@ -3,7 +3,8 @@ import type { Character } from '@/types';
 import { formatModifier } from '@/utils/derived-stats';
 import { numOrDefault } from '@/utils/form-helpers';
 import {
-  darkPaperStyle,
+  elevatedStyle,
+  glowAccent,
   centeredInputStyles,
   centeredBoldInputStyles,
   centeredLargeInputStyles,
@@ -16,14 +17,19 @@ interface Props {
   onChange: (partial: Partial<Character>) => void;
 }
 
-function StatBox({ label, children }: { label: string; children: React.ReactNode }) {
+function StatBox({ label, children, extraStyle, labelColor }: {
+  label: string;
+  children: React.ReactNode;
+  extraStyle?: React.CSSProperties;
+  labelColor?: string;
+}) {
   return (
     <Paper
       p="xs"
       ta="center"
-      style={darkPaperStyle}
+      style={{ ...elevatedStyle, ...extraStyle }}
     >
-      <Text size="xs" tt="uppercase" fw={600} c="dimmed" mb={2}>
+      <Text size="xs" tt="uppercase" fw={600} c={labelColor ?? 'parchment.5'} mb={2} style={{ letterSpacing: '0.5px' }}>
         {label}
       </Text>
       {children}
@@ -34,7 +40,10 @@ function StatBox({ label, children }: { label: string; children: React.ReactNode
 export function CombatSidebar({ character, calculatedInitiative, calculatedProfBonus, onChange }: Props) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 'var(--mantine-spacing-xs)' }}>
-      <StatBox label="HP">
+      <StatBox
+        label="HP"
+        extraStyle={character.hp < character.maxHp ? { border: '1px solid var(--mantine-color-gold-6)', ...glowAccent } : undefined}
+      >
         <NumberInput
           value={character.hp}
           onChange={(v) => onChange({ hp: numOrDefault(v, 0) })}
@@ -61,7 +70,7 @@ export function CombatSidebar({ character, calculatedInitiative, calculatedProfB
           styles={centeredInputStyles}
         />
       </StatBox>
-      <StatBox label="AC">
+      <StatBox label="AC" extraStyle={{ borderTop: '3px solid var(--mantine-color-parchment-6)' }}>
         <NumberInput
           value={character.ac}
           onChange={(v) => onChange({ ac: numOrDefault(v, 10) })}
@@ -105,7 +114,7 @@ export function CombatSidebar({ character, calculatedInitiative, calculatedProfB
           size="xs"
           styles={centeredBoldInputStyles}
         />
-        <Text size="xs" c="dimmed">auto: {formatModifier(calculatedInitiative)}</Text>
+        <Text size="xs" c="parchment.6">auto: {formatModifier(calculatedInitiative)}</Text>
       </StatBox>
       <StatBox label="Prof.">
         <NumberInput
@@ -114,9 +123,9 @@ export function CombatSidebar({ character, calculatedInitiative, calculatedProfB
           size="xs"
           styles={centeredBoldInputStyles}
         />
-        <Text size="xs" c="dimmed">auto: {formatModifier(calculatedProfBonus)}</Text>
+        <Text size="xs" c="parchment.6">auto: {formatModifier(calculatedProfBonus)}</Text>
       </StatBox>
-      <StatBox label="Level">
+      <StatBox label="Level" extraStyle={glowAccent} labelColor="gold.4">
         <NumberInput
           value={character.level}
           onChange={(v) => onChange({ level: numOrDefault(v, 1) })}

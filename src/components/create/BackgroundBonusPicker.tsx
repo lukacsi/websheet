@@ -59,7 +59,7 @@ export function BackgroundBonusPicker({
   return (
     <Stack gap="xs">
       <Text size="sm" fw={500}>Ability Score Bonuses</Text>
-      <Text size="xs" c="dimmed">
+      <Text size="xs" c="parchment.6">
         Eligible: {eligible.map(k => ABILITY_NAMES[k]).join(', ')}
       </Text>
 
@@ -103,7 +103,7 @@ export function BackgroundBonusPicker({
       )}
 
       {mode === '+1/+1/+1' && (
-        <Text size="xs" c="dimmed">
+        <Text size="xs" c="parchment.6">
           +1 applied to all three eligible abilities.
         </Text>
       )}

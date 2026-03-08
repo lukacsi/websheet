@@ -68,7 +68,7 @@ function HoverPreview({ tagType, name, source }: { tagType: EntityTagType; name:
   }, [tagType, name, source]);
 
   if (loading) return <Loader size="xs" />;
-  if (!data) return <Text size="xs" c="dimmed">Not found</Text>;
+  if (!data) return <Text size="xs" c="parchment.6">Not found</Text>;
 
   const entries = data.entries as Entry[] | undefined;
   // Show first entry only for preview
@@ -84,7 +84,7 @@ function HoverPreview({ tagType, name, source }: { tagType: EntityTagType; name:
         <EntryRenderer entries={preview} />
       )}
       {entries && entries.length > 2 && (
-        <Text size="xs" c="dimmed" fs="italic">Click for more...</Text>
+        <Text size="xs" c="parchment.6" fs="italic">Click for more...</Text>
       )}
     </Stack>
   );

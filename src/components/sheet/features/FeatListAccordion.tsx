@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Accordion, Badge, Group, Text, TextInput, Textarea, ActionIcon, Select, Button } from '@mantine/core';
 import type { CharacterFeat, Entry } from '@/types';
 import { EntryRenderer } from '@/components/create/EntryRenderer';
-import { accordionDarkStyles } from '@/theme/styles';
+import { accordionStyles } from '@/theme/styles';
 
 interface FeatRecord {
   id: string;
@@ -63,14 +63,14 @@ export function FeatListAccordion({ feats, onFeatsChange, allFeats, featsLoading
   return (
     <>
       {feats.length > 0 && (
-        <Accordion variant="separated" chevronPosition="left" styles={accordionDarkStyles}>
+        <Accordion variant="separated" chevronPosition="left" styles={accordionStyles}>
           {feats.map((feat, i) => {
             const entries = feat.featId ? resolvedFeatEntries[feat.featId] : undefined;
             return (
               <Accordion.Item key={`feat-${i}`} value={`feat-${i}`}>
                 <Accordion.Control>
                   <Group gap="xs">
-                    <Badge size="xs" variant="light" color={feat.source === 'background' ? 'orange' : 'teal'}>
+                    <Badge size="xs" variant="light" color="inkBrown">
                       Feat
                     </Badge>
                     {feat.featId ? (
@@ -87,14 +87,14 @@ export function FeatListAccordion({ feats, onFeatsChange, allFeats, featsLoading
                       />
                     )}
                     {feat.source === 'background' && (
-                      <Text size="xs" c="dimmed">(background)</Text>
+                      <Text size="xs" c="parchment.6">(background)</Text>
                     )}
                     <div style={{ flex: 1 }} />
                     {feat.source !== 'background' && (
                       <ActionIcon
                         size="xs"
                         variant="subtle"
-                        color="red"
+                        color="bloodRed"
                         onClick={(e) => { e.stopPropagation(); removeFeat(i); }}
                         title="Remove"
                       >
@@ -107,7 +107,7 @@ export function FeatListAccordion({ feats, onFeatsChange, allFeats, featsLoading
                   {entries?.length ? (
                     <EntryRenderer entries={entries} />
                   ) : feat.featId ? (
-                    <Text size="sm" c="dimmed">Loading...</Text>
+                    <Text size="sm" c="parchment.6">Loading...</Text>
                   ) : (
                     <Textarea
                       value={feat.description ?? ''}

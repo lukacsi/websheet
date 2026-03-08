@@ -621,6 +621,7 @@ async function importClasses(): Promise<{ created: number; updated: number }> {
       edition: edition(sc.source, sc.edition),
       features: sc.subclassFeatures || [],
       spellcastingAbility: sc.spellcastingAbility || null,
+      additionalSpells: sc.additionalSpells || null,
     };
 
     const result = await upsert("subclasses", record, [

@@ -28,13 +28,13 @@ export function ItemDetail({ data }: Props) {
     <Stack gap="sm">
       <Group gap="xs" wrap="wrap">
         {item.rarity && item.rarity !== 'none' && (
-          <Badge size="xs" variant="light" color="teal">{item.rarity}</Badge>
+          <Badge size="xs" variant="light" color="gold">{item.rarity}</Badge>
         )}
         {item.type && <Badge size="xs" variant="outline">{item.type}</Badge>}
         <Badge size="xs" variant="outline">{item.source}</Badge>
       </Group>
 
-      {attunement && <Text size="xs" c="dimmed" fs="italic">{attunement}</Text>}
+      {attunement && <Text size="xs" c="parchment.6" fs="italic">{attunement}</Text>}
 
       <Divider />
 
@@ -57,7 +57,7 @@ export function ItemDetail({ data }: Props) {
         <DetailRow label="Properties" value={item.properties.join(', ')} />
       )}
       {item.stealthDisadvantage && (
-        <Text size="sm" c="dimmed">Stealth disadvantage</Text>
+        <Text size="sm" c="parchment.6">Stealth disadvantage</Text>
       )}
 
       {/* Item group: list of member items as clickable links */}

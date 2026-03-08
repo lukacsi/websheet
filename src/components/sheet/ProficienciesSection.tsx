@@ -29,7 +29,7 @@ function TagList({ label, items, linkType, onChange }: TagListProps) {
 
   return (
     <Stack gap={4}>
-      <Text size="sm" fw={500}>{label}</Text>
+      <Text size="xs" fw={600} c="parchment.4" tt="uppercase" style={{ letterSpacing: '0.5px' }}>{label}</Text>
       <Group gap={4} wrap="wrap">
         {items.map((item) => (
           <Group key={item} gap={2} wrap="nowrap">
@@ -45,6 +45,7 @@ function TagList({ label, items, linkType, onChange }: TagListProps) {
         ))}
         <TextInput
           size="xs"
+          variant="unstyled"
           placeholder="Add..."
           value={input}
           onChange={(e) => setInput(e.currentTarget.value)}

@@ -52,7 +52,7 @@ export function CreateCharacter() {
       notifications.show({
         title: 'Character created!',
         message: `${formData.name} is ready for adventure.`,
-        color: 'green',
+        color: 'gold',
       });
       navigate(`/character/${character.id}`);
     }
@@ -87,7 +87,7 @@ export function CreateCharacter() {
       </FormProvider>
 
       {saveError && (
-        <Alert icon={<IconAlertCircle size={16} />} color="red" mt="md">
+        <Alert icon={<IconAlertCircle size={16} />} color="bloodRed" mt="md">
           {saveError}
         </Alert>
       )}
@@ -108,7 +108,7 @@ export function CreateCharacter() {
         ) : (
           <Button
             onClick={handleSubmit}
-            color="green"
+            color="gold"
             loading={saving}
           >
             Create Character

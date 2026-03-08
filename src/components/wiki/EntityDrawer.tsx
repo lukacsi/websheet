@@ -4,7 +4,7 @@ import { IconArrowLeft, IconX } from '@tabler/icons-react';
 import { useWikiDrawer, type WikiTarget } from './WikiDrawerContext';
 import { lookupEntity } from '@/api/wiki';
 import { EntityDetailView } from './EntityDetailView';
-import { darkDrawerStyles } from '@/theme/styles';
+import { drawerStyles } from '@/theme/styles';
 
 /** Inner content that re-fetches when target changes */
 function DrawerContent({ target }: { target: WikiTarget }) {
@@ -36,7 +36,7 @@ function DrawerContent({ target }: { target: WikiTarget }) {
 
   if (error) {
     return (
-      <Text c="dimmed" ta="center" mt="xl">
+      <Text c="parchment.6" ta="center" mt="xl">
         {error === 'Not found'
           ? `No data available for "${target.name}" yet.`
           : error}
@@ -61,7 +61,7 @@ export function EntityDrawer() {
       position="right"
       size="xl"
       withCloseButton={false}
-      styles={darkDrawerStyles}
+      styles={drawerStyles}
     >
       {/* Sticky header */}
       <Group

@@ -159,7 +159,7 @@ export function FeaturesSection({
       {loading && <Loader size="sm" />}
 
       {!loading && !hasContent && (
-        <Text size="sm" c="dimmed">Select a class, race, or background to see features.</Text>
+        <Text size="sm" c="parchment.6">Select a class, race, or background to see features.</Text>
       )}
 
       {raceTraits && showRace && (

@@ -48,8 +48,14 @@ export function SkillsSection({
           const prof = proficiencies.includes(skill);
           const exp = expertise.includes(skill);
           const mod = skillModifier(abilities[abilityKey], prof, exp, level);
+          const rowStyle = exp
+            ? { borderLeft: '2px solid var(--mantine-color-gold-5)' }
+            : prof
+              ? { borderLeft: '2px solid var(--mantine-color-inkBrown-7)' }
+              : { opacity: 0.6 };
+          const modColor = mod > 0 ? undefined : mod < 0 ? 'red.4' : 'dimmed';
           return (
-            <Table.Tr key={skill}>
+            <Table.Tr key={skill} style={rowStyle}>
               <Table.Td w={30}>
                 <Checkbox
                   size="xs"
@@ -68,7 +74,7 @@ export function SkillsSection({
                 />
               </Table.Td>
               <Table.Td w={40}>
-                <Text size="sm" fw={600}>{formatModifier(mod)}</Text>
+                <Text size="sm" fw={600} c={modColor}>{formatModifier(mod)}</Text>
               </Table.Td>
               <Table.Td>
                 <WikiLink tagType="skill" name={skill} />

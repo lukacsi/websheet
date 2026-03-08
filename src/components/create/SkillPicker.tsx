@@ -52,7 +52,7 @@ export function SkillPicker({
           );
         })}
       </SimpleGrid>
-      <Text size="xs" c="dimmed">
+      <Text size="xs" c="parchment.6">
         {chosen.length} / {count} selected
       </Text>
     </Stack>

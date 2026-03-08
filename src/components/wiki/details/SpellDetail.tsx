@@ -59,11 +59,11 @@ export function SpellDetail({ data }: Props) {
 
   return (
     <Stack gap="sm">
-      <Text size="sm" c="dimmed" fs="italic">{levelLabel}</Text>
+      <Text size="sm" c="parchment.6" fs="italic">{levelLabel}</Text>
 
       <Group gap="xs" wrap="wrap">
-        {spell.isRitual && <Badge size="xs" color="teal" variant="light">Ritual</Badge>}
-        {spell.duration?.[0]?.concentration && <Badge size="xs" color="yellow" variant="light">Concentration</Badge>}
+        {spell.isRitual && <Badge size="xs" color="gold" variant="light">Ritual</Badge>}
+        {spell.duration?.[0]?.concentration && <Badge size="xs" color="gold" variant="light">Concentration</Badge>}
         <Badge size="xs" variant="outline">{spell.source}</Badge>
       </Group>
 
@@ -91,9 +91,9 @@ export function SpellDetail({ data }: Props) {
         <>
           <Divider />
           <Group gap={4} wrap="wrap">
-            <Text size="xs" c="dimmed">Classes:</Text>
+            <Text size="xs" c="parchment.5">Classes:</Text>
             {spell.classes.map(c => (
-              <Badge key={c} size="xs" variant="outline" color="orange">{c}</Badge>
+              <Badge key={c} size="xs" variant="outline" color="inkBrown">{c}</Badge>
             ))}
           </Group>
         </>

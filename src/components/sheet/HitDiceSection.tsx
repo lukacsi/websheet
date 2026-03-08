@@ -1,7 +1,7 @@
 import { Group, Text, NumberInput, ActionIcon, Stack, Badge, Paper } from '@mantine/core';
 import type { HitDice } from '@/types';
 import { numOrDefault } from '@/utils/form-helpers';
-import { centeredInputStyles, darkPaperStyle } from '@/theme/styles';
+import { centeredInputStyles, cardStyle } from '@/theme/styles';
 import { RemoveButton } from './RemoveButton';
 
 interface Props {
@@ -26,7 +26,7 @@ export function HitDiceSection({ hitDice, onChange }: Props) {
   return (
     <Stack gap="xs">
       {hitDice.map((hd, i) => (
-        <Paper key={i} p="xs" style={darkPaperStyle}>
+        <Paper key={i} p="xs" style={cardStyle}>
           <Group gap="xs" justify="space-between">
             <Group gap="xs">
               <Badge variant="light" color="inkBrown" size="lg">d{hd.die}</Badge>
@@ -45,7 +45,7 @@ export function HitDiceSection({ hitDice, onChange }: Props) {
           </Group>
           <Group gap="xs" mt={4}>
             <Text size="sm" fw={600}>{hd.total - hd.used}</Text>
-            <Text size="xs" c="dimmed">remaining / {hd.total}</Text>
+            <Text size="xs" c="parchment.6">remaining / {hd.total}</Text>
             <div style={{ flex: 1 }} />
             <NumberInput
               value={hd.total}

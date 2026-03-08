@@ -4,11 +4,11 @@ import { numOrDefault } from '@/utils/form-helpers';
 import { centeredInputStyles } from '@/theme/styles';
 
 const COINS: { key: keyof Currency; label: string; color: string }[] = [
-  { key: 'pp', label: 'PP', color: '#c0c0c0' },
-  { key: 'gp', label: 'GP', color: '#d4a017' },
-  { key: 'ep', label: 'EP', color: '#8a8a8a' },
-  { key: 'sp', label: 'SP', color: '#a0a0a0' },
-  { key: 'cp', label: 'CP', color: '#b87333' },
+  { key: 'pp', label: 'PP', color: 'var(--mantine-color-gray-4)' },
+  { key: 'gp', label: 'GP', color: 'var(--mantine-color-gold-5)' },
+  { key: 'ep', label: 'EP', color: 'var(--mantine-color-gray-6)' },
+  { key: 'sp', label: 'SP', color: 'var(--mantine-color-gray-5)' },
+  { key: 'cp', label: 'CP', color: 'var(--mantine-color-orange-7)' },
 ];
 
 interface Props {

@@ -1,7 +1,7 @@
 import { Stack, Group, Text, Paper } from '@mantine/core';
 import type { AbilityScores, Skill } from '@/types';
 import { skillModifier } from '@/utils/derived-stats';
-import { darkPaperStyle } from '@/theme/styles';
+import { cardStyle } from '@/theme/styles';
 
 interface Props {
   abilities: AbilityScores;
@@ -25,11 +25,11 @@ export function SensesSection({ abilities, skillProficiencies, level }: Props) {
   ];
 
   return (
-    <Paper p="xs" style={darkPaperStyle}>
+    <Paper p="xs" style={cardStyle}>
       <Stack gap={4}>
         {senses.map((s) => (
           <Group key={s.label} justify="space-between">
-            <Text size="xs" c="dimmed">{s.label}</Text>
+            <Text size="xs" c="parchment.5">{s.label}</Text>
             <Text size="sm" fw={600}>{s.value}</Text>
           </Group>
         ))}

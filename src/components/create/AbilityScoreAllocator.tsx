@@ -26,7 +26,7 @@ interface AbilityScoreAllocatorProps {
 function BonusCell({ bonus }: { bonus: number }) {
   return (
     <Table.Td ta="center">
-      {bonus > 0 ? <Text size="sm" c="inkBrown">+{bonus}</Text> : <Text size="sm" c="dimmed">{'\u2014'}</Text>}
+      {bonus > 0 ? <Text size="sm" c="inkBrown">+{bonus}</Text> : <Text size="sm" c="parchment.6">{'\u2014'}</Text>}
     </Table.Td>
   );
 }
@@ -72,7 +72,7 @@ function PointBuyRow({
           </ActionIcon>
         </Group>
       </Table.Td>
-      <Table.Td ta="center"><Text size="sm" c="dimmed">{cost}</Text></Table.Td>
+      <Table.Td ta="center"><Text size="sm" c="parchment.6">{cost}</Text></Table.Td>
       {showBonus && <BonusCell bonus={bonus} />}
       <Table.Td ta="center"><Text fw={600}>{total}</Text></Table.Td>
       <Table.Td ta="center"><Text fw={500}>{formatModifier(abilityModifier(total))}</Text></Table.Td>
@@ -249,17 +249,17 @@ export function AbilityScoreAllocator({
       </Table>
 
       {method === 'pointBuy' && (
-        <Text size="xs" c="dimmed">
+        <Text size="xs" c="parchment.6">
           Scores range {POINT_BUY_MIN}–{POINT_BUY_MAX}. Cost increases at 14 ({POINT_BUY_COSTS[14]}) and 15 ({POINT_BUY_COSTS[15]}).
         </Text>
       )}
       {method === 'standardArray' && (
-        <Text size="xs" c="dimmed">
+        <Text size="xs" c="parchment.6">
           Assign each value from the standard array ({STANDARD_ARRAY.join(', ')}) to one ability.
         </Text>
       )}
       {method === 'manual' && (
-        <Text size="xs" c="dimmed">
+        <Text size="xs" c="parchment.6">
           Enter scores manually (3–18). Use this for rolled stats or custom values.
         </Text>
       )}

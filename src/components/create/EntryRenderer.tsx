@@ -216,7 +216,7 @@ function RenderEntryObject({ entry }: { entry: EntryObject }) {
           </Text>
         );
       }
-      return <Text size="sm" c="dimmed">{JSON.stringify(entry)}</Text>;
+      return <Text size="sm" c="parchment.6">{JSON.stringify(entry)}</Text>;
   }
 }
 

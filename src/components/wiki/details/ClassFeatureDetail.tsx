@@ -13,7 +13,7 @@ export function ClassFeatureDetail({ data }: Props) {
   return (
     <Stack gap="sm">
       <Group gap="xs" wrap="wrap">
-        <Badge size="xs" variant="light" color="orange">{feature.className}</Badge>
+        <Badge size="xs" variant="light" color="inkBrown">{feature.className}</Badge>
         <Badge size="xs" variant="outline">Level {feature.level}</Badge>
         <Badge size="xs" variant="outline">{feature.source}</Badge>
         {feature.isSubclassFeature && feature.subclassName && (

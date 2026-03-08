@@ -1,4 +1,4 @@
-import { Stack, TextInput, NumberInput, Select, Table, Button } from '@mantine/core';
+import { Stack, TextInput, NumberInput, Select, Table, Button, Text } from '@mantine/core';
 import type { TrackedResource } from '@/types';
 import { numOrDefault } from '@/utils/form-helpers';
 import { centeredInputStyles } from '@/theme/styles';
@@ -34,18 +34,18 @@ export function ResourcesSection({ resources, onChange }: Props) {
     <Stack gap="xs">
       {resources.length > 0 && (
         <Table withRowBorders verticalSpacing={2} horizontalSpacing="xs" fz="sm">
-          <Table.Thead>
+          <Table.Thead style={{ borderBottom: '1px solid rgba(191, 157, 100, 0.15)' }}>
             <Table.Tr>
-              <Table.Th>Resource</Table.Th>
-              <Table.Th w={50} ta="center">Used</Table.Th>
-              <Table.Th w={50} ta="center">Max</Table.Th>
-              <Table.Th w={110}>Resets</Table.Th>
+              <Table.Th><Text size="xs" fw={600} c="parchment.5" tt="uppercase" style={{ letterSpacing: '0.5px' }}>Resource</Text></Table.Th>
+              <Table.Th w={50} ta="center"><Text size="xs" fw={600} c="parchment.5" tt="uppercase" style={{ letterSpacing: '0.5px' }}>Used</Text></Table.Th>
+              <Table.Th w={50} ta="center"><Text size="xs" fw={600} c="parchment.5" tt="uppercase" style={{ letterSpacing: '0.5px' }}>Max</Text></Table.Th>
+              <Table.Th w={110}><Text size="xs" fw={600} c="parchment.5" tt="uppercase" style={{ letterSpacing: '0.5px' }}>Resets</Text></Table.Th>
               <Table.Th w={30}></Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
             {resources.map((r, i) => (
-              <Table.Tr key={i}>
+              <Table.Tr key={i} style={r.used >= r.max && r.max > 0 ? { opacity: 0.5 } : undefined}>
                 <Table.Td>
                   <TextInput
                     value={r.name}

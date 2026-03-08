@@ -180,7 +180,7 @@ export function CreatureDetail({ data }: Props) {
   return (
     <Stack gap={0}>
       {/* Type line */}
-      <Text size="sm" fs="italic" c="dimmed">
+      <Text size="sm" fs="italic" c="parchment.6">
         {[sizes, typeStr].filter(Boolean).join(' ')}
       </Text>
 

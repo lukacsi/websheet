@@ -3,9 +3,18 @@ import type { AbilityScores, AbilityKey } from '@/types';
 import { ABILITY_NAMES, abilityModifier } from '@/types';
 import { savingThrow, formatModifier } from '@/utils/derived-stats';
 import { numOrDefault, toggleArrayItem } from '@/utils/form-helpers';
-import { darkPaperStyle } from '@/theme/styles';
+import { elevatedStyle } from '@/theme/styles';
 
 const ABILITIES: AbilityKey[] = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+
+const ABILITY_COLORS: Record<AbilityKey, string> = {
+  str: 'var(--mantine-color-inkBrown-8)',
+  dex: 'var(--mantine-color-teal-8)',
+  con: 'var(--mantine-color-inkBrown-8)',
+  int: 'var(--mantine-color-blue-8)',
+  wis: 'var(--mantine-color-violet-8)',
+  cha: 'var(--mantine-color-gold-8)',
+};
 
 interface Props {
   abilities: AbilityScores;
@@ -38,12 +47,12 @@ export function AbilityBlock({
             key={key}
             p={6}
             ta="center"
-            style={darkPaperStyle}
+            style={{ ...elevatedStyle, borderLeft: `2px solid ${ABILITY_COLORS[key]}` }}
           >
-            <Text size="xs" tt="uppercase" fw={700} c="parchment.4" mb={2}>
+            <Text size="xs" tt="uppercase" fw={700} c="parchment.3" mb={2}>
               {ABILITY_NAMES[key].slice(0, 3)}
             </Text>
-            <Text fw={700} size="lg" c={mod >= 0 ? 'parchment.2' : 'red.4'} lh={1.1}>
+            <Text fw={800} size="xl" c={mod >= 0 ? 'parchment.2' : 'red.4'} lh={1.1}>
               {formatModifier(mod)}
             </Text>
             <NumberInput
@@ -65,7 +74,7 @@ export function AbilityBlock({
                 title="Saving throw proficiency"
                 styles={{ input: { cursor: 'pointer' } }}
               />
-              <Text size="xs" fw={500} c="dimmed">
+              <Text size="xs" fw={500} c="parchment.6">
                 Save {formatModifier(save)}
               </Text>
             </Group>

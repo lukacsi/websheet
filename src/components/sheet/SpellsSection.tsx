@@ -10,6 +10,11 @@ const SCHOOL_NAMES: Record<string, string> = {
   V: 'Evoc', I: 'Ill', N: 'Necro', T: 'Trans',
 };
 
+const SCHOOL_COLORS: Record<string, string> = {
+  A: 'inkBrown', C: 'teal', D: 'grape', E: 'pink',
+  V: 'bloodRed', I: 'indigo', N: 'gray', T: 'gold',
+};
+
 interface Props {
   spells: CharacterSpell[];
   onChange: (spells: CharacterSpell[]) => void;
@@ -80,15 +85,23 @@ export function SpellsSection({ spells, onChange }: Props) {
         const group = grouped.get(level)!;
         return (
           <div key={level}>
-            <Text size="xs" fw={600} c="dimmed" tt="uppercase" mb={2}>
+            <Text size="xs" fw={600} c="parchment.5" tt="uppercase" mb={2} style={{ letterSpacing: '0.5px' }}>
               {level === 0 ? 'Cantrips' : `Level ${level}`}
             </Text>
             <Table withRowBorders={false} verticalSpacing={2} fz="sm">
               <Table.Tbody>
                 {group.map(({ idx, spellId, name, prepared, alwaysPrepared }) => {
                   const spellData = allSpells.find((s) => s.id === spellId);
+                  const isCantrip = level === 0;
+                  const rowStyle = alwaysPrepared
+                    ? { borderLeft: '2px solid var(--mantine-color-gold-5)' }
+                    : prepared
+                      ? { borderLeft: '2px solid var(--mantine-color-inkBrown-7)' }
+                      : isCantrip
+                        ? {}
+                        : { opacity: 0.6 };
                   return (
-                    <Table.Tr key={idx}>
+                    <Table.Tr key={idx} style={rowStyle}>
                       <Table.Td w={30}>
                         <Checkbox
                           size="xs"
@@ -107,23 +120,23 @@ export function SpellsSection({ spells, onChange }: Props) {
                       </Table.Td>
                       <Table.Td w={60}>
                         {spellData && (
-                          <Badge size="xs" variant="light" color="gray" style={{ minWidth: 50, textAlign: 'center' }}>
+                          <Badge size="xs" variant="light" color={SCHOOL_COLORS[spellData.school] ?? 'gray'} style={{ minWidth: 50, textAlign: 'center' }}>
                             {SCHOOL_NAMES[spellData.school] ?? spellData.school}
                           </Badge>
                         )}
                       </Table.Td>
                       <Table.Td w={70}>
                         <Group gap={4} wrap="nowrap">
-                          {spellData?.components?.v && <Text span size="xs" c="dimmed">V</Text>}
-                          {spellData?.components?.s && <Text span size="xs" c="dimmed">S</Text>}
-                          {spellData?.components?.m && <Text span size="xs" c="dimmed">M</Text>}
+                          {spellData?.components?.v && <Text span size="xs" c="parchment.6">V</Text>}
+                          {spellData?.components?.s && <Text span size="xs" c="parchment.6">S</Text>}
+                          {spellData?.components?.m && <Text span size="xs" c="parchment.6">M</Text>}
                         </Group>
                       </Table.Td>
                       <Table.Td w={50}>
                         <Group gap={4} wrap="nowrap">
-                          {spellData?.isRitual && <Badge size="xs" variant="outline" color="teal">R</Badge>}
+                          {spellData?.isRitual && <Badge size="xs" variant="outline" color="gold">R</Badge>}
                           {spellData?.duration?.[0]?.concentration && (
-                            <Badge size="xs" variant="outline" color="yellow">C</Badge>
+                            <Badge size="xs" variant="outline" color="gold">C</Badge>
                           )}
                         </Group>
                       </Table.Td>
@@ -140,7 +153,7 @@ export function SpellsSection({ spells, onChange }: Props) {
       })}
 
       {spells.length === 0 && (
-        <Text size="sm" c="dimmed" fs="italic">No spells added yet</Text>
+        <Text size="sm" c="parchment.6" fs="italic">No spells added yet</Text>
       )}
     </Stack>
   );

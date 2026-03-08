@@ -373,7 +373,7 @@ export function StepClass() {
                           <Title order={5} c="orange">
                             Level {lvl}: {ref.name}
                           </Title>
-                          <Text size="xs" c="dimmed">{cls.source}</Text>
+                          <Text size="xs" c="parchment.6">{cls.source}</Text>
                         </Group>
                         {featureEntries?.length ? (
                           <>
@@ -388,7 +388,7 @@ export function StepClass() {
                             )}
                           </>
                         ) : (
-                          <Text size="sm" c="dimmed">Details not available.</Text>
+                          <Text size="sm" c="parchment.6">Details not available.</Text>
                         )}
                       </Stack>
                     );
@@ -403,7 +403,7 @@ export function StepClass() {
                           <Title order={5} c="grape">
                             Level {lvl}: {feature.name}
                           </Title>
-                          <Text size="xs" c="dimmed">{selectedSubclass?.source}</Text>
+                          <Text size="xs" c="parchment.6">{selectedSubclass?.source}</Text>
                         </Group>
                         {featureEntries?.length ? (
                           <>
@@ -418,7 +418,7 @@ export function StepClass() {
                             )}
                           </>
                         ) : (
-                          <Text size="sm" c="dimmed">Details not available.</Text>
+                          <Text size="sm" c="parchment.6">Details not available.</Text>
                         )}
                       </Stack>
                     );
