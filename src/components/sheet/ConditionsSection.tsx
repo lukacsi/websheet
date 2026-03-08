@@ -1,6 +1,9 @@
-import { Group, Badge, Menu, Button } from '@mantine/core';
-import type { Condition } from '@/types';
+import { Group, Menu, Button, NumberInput, Text } from '@mantine/core';
+import type { Condition, Edition } from '@/types';
 import { WikiLink } from '@/components/wiki/WikiLink';
+import { numOrDefault } from '@/utils/form-helpers';
+import { centeredCompactInputStyles } from '@/theme/styles';
+import { RemoveButton } from './RemoveButton';
 
 const ALL_CONDITIONS: Condition[] = [
   'blinded', 'charmed', 'deafened', 'exhaustion', 'frightened',
@@ -10,27 +13,43 @@ const ALL_CONDITIONS: Condition[] = [
 
 interface Props {
   conditions: Condition[];
+  edition?: Edition;
+  exhaustionLevel?: number;
   onChange: (conditions: Condition[]) => void;
+  onExhaustionChange?: (level: number) => void;
 }
 
-export function ConditionsSection({ conditions, onChange }: Props) {
+export function ConditionsSection({ conditions, edition, exhaustionLevel = 0, onChange, onExhaustionChange }: Props) {
   const available = ALL_CONDITIONS.filter((c) => !conditions.includes(c));
+  const maxExhaustion = edition === 'classic' ? 6 : 10;
+  const hasExhaustion = conditions.includes('exhaustion');
 
   return (
-    <Group gap="xs" wrap="wrap">
+    <Group gap="xs" wrap="wrap" align="center">
       {conditions.map((c) => (
-        <Group key={c} gap={2} wrap="nowrap">
+        <Group key={c} gap={2} wrap="nowrap" align="center">
           <WikiLink tagType="condition" name={c} />
-          <Badge
-            color="red"
-            variant="light"
-            size="xs"
-            style={{ cursor: 'pointer' }}
-            onClick={() => onChange(conditions.filter((x) => x !== c))}
-            title="Remove"
-          >
-            &times;
-          </Badge>
+          {c === 'exhaustion' && hasExhaustion && onExhaustionChange && (
+            <Group gap={2} wrap="nowrap">
+              <NumberInput
+                value={exhaustionLevel}
+                onChange={(v) => onExhaustionChange(numOrDefault(v, 0))}
+                min={0}
+                max={maxExhaustion}
+                size="xs"
+                w={45}
+                styles={centeredCompactInputStyles}
+              />
+              <Text size="xs" c="dimmed">/ {maxExhaustion}</Text>
+            </Group>
+          )}
+          <RemoveButton
+            variant="badge"
+            onClick={() => {
+              onChange(conditions.filter((x) => x !== c));
+              if (c === 'exhaustion' && onExhaustionChange) onExhaustionChange(0);
+            }}
+          />
         </Group>
       ))}
       {available.length > 0 && (
@@ -42,7 +61,10 @@ export function ConditionsSection({ conditions, onChange }: Props) {
             {available.map((c) => (
               <Menu.Item
                 key={c}
-                onClick={() => onChange([...conditions, c])}
+                onClick={() => {
+                  onChange([...conditions, c]);
+                  if (c === 'exhaustion' && onExhaustionChange) onExhaustionChange(1);
+                }}
                 style={{ textTransform: 'capitalize' }}
               >
                 {c}

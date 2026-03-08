@@ -1,5 +1,8 @@
 import { Group, Text, NumberInput, ActionIcon, Stack, Badge } from '@mantine/core';
 import type { HitDice } from '@/types';
+import { numOrDefault } from '@/utils/form-helpers';
+import { centeredInputStyles } from '@/theme/styles';
+import { RemoveButton } from './RemoveButton';
 
 interface Props {
   hitDice: HitDice[];
@@ -27,39 +30,37 @@ export function HitDiceSection({ hitDice, onChange }: Props) {
           <Badge variant="light" color="inkBrown" size="lg">d{hd.die}</Badge>
           <NumberInput
             value={hd.die}
-            onChange={(v) => updateDie(i, { die: typeof v === 'number' ? v : 8 })}
+            onChange={(v) => updateDie(i, { die: numOrDefault(v, 8) })}
             min={4}
             max={12}
             step={2}
             size="xs"
             w={55}
-            styles={{ input: { textAlign: 'center' } }}
+            styles={centeredInputStyles}
           />
           <Text size="xs" c="dimmed">remaining:</Text>
           <Text size="sm" fw={600}>{hd.total - hd.used}</Text>
           <Text size="xs" c="dimmed">/ {hd.total}</Text>
           <NumberInput
             value={hd.total}
-            onChange={(v) => updateDie(i, { total: typeof v === 'number' ? v : 1 })}
+            onChange={(v) => updateDie(i, { total: numOrDefault(v, 1) })}
             min={0}
             size="xs"
             w={50}
             label="total"
-            styles={{ input: { textAlign: 'center' } }}
+            styles={centeredInputStyles}
           />
           <NumberInput
             value={hd.used}
-            onChange={(v) => updateDie(i, { used: typeof v === 'number' ? v : 0 })}
+            onChange={(v) => updateDie(i, { used: numOrDefault(v, 0) })}
             min={0}
             max={hd.total}
             size="xs"
             w={50}
             label="used"
-            styles={{ input: { textAlign: 'center' } }}
+            styles={centeredInputStyles}
           />
-          <ActionIcon size="xs" variant="subtle" color="red" onClick={() => removeDie(i)}>
-            &times;
-          </ActionIcon>
+          <RemoveButton onClick={() => removeDie(i)} />
         </Group>
       ))}
       <ActionIcon size="sm" variant="light" onClick={addDie} title="Add hit die type">
