@@ -368,6 +368,16 @@ export function CharacterSheet() {
                   onChange={(field, value) => update({ [field]: value })}
                 />
               </div>
+              <div>
+                <SectionTitle>Proficiencies &amp; Languages</SectionTitle>
+                <ProficienciesSection
+                  armorProficiencies={character.armorProficiencies}
+                  weaponProficiencies={character.weaponProficiencies}
+                  toolProficiencies={character.toolProficiencies}
+                  languages={character.languages}
+                  onChange={(field, values) => update({ [field]: values })}
+                />
+              </div>
             </Stack>
           </Tabs.Panel>
         </Tabs>
@@ -375,16 +385,11 @@ export function CharacterSheet() {
 
         {/* ── Right Sidebar ── */}
         <div className={styles.sidebarRight}>
-          <SectionTitle>Death Saves</SectionTitle>
-          <DeathSavesSection
-            deathSaves={character.deathSaves}
-            onChange={(deathSaves) => update({ deathSaves })}
-          />
-
-          <SectionTitle>Hit Dice</SectionTitle>
-          <HitDiceSection
-            hitDice={character.hitDice}
-            onChange={(hitDice) => update({ hitDice })}
+          <SectionTitle>Senses</SectionTitle>
+          <SensesSection
+            abilities={character.abilities}
+            skillProficiencies={character.skillProficiencies}
+            level={character.level}
           />
 
           <SectionTitle>Conditions</SectionTitle>
@@ -396,20 +401,16 @@ export function CharacterSheet() {
             onExhaustionChange={(exhaustionLevel) => update({ exhaustionLevel })}
           />
 
-          <SectionTitle>Senses</SectionTitle>
-          <SensesSection
-            abilities={character.abilities}
-            skillProficiencies={character.skillProficiencies}
-            level={character.level}
+          <SectionTitle>Hit Dice</SectionTitle>
+          <HitDiceSection
+            hitDice={character.hitDice}
+            onChange={(hitDice) => update({ hitDice })}
           />
 
-          <SectionTitle>Proficiencies &amp; Languages</SectionTitle>
-          <ProficienciesSection
-            armorProficiencies={character.armorProficiencies}
-            weaponProficiencies={character.weaponProficiencies}
-            toolProficiencies={character.toolProficiencies}
-            languages={character.languages}
-            onChange={(field, values) => update({ [field]: values })}
+          <SectionTitle>Death Saves</SectionTitle>
+          <DeathSavesSection
+            deathSaves={character.deathSaves}
+            onChange={(deathSaves) => update({ deathSaves })}
           />
         </div>
       </div>

@@ -26,6 +26,9 @@ export function ConditionsSection({ conditions, edition, exhaustionLevel = 0, on
 
   return (
     <Group gap="xs" wrap="wrap" align="center">
+      {conditions.length === 0 && (
+        <Text size="sm" c="parchment.6" fs="italic">No active conditions</Text>
+      )}
       {conditions.map((c) => (
         <Group key={c} gap={2} wrap="nowrap" align="center">
           <WikiLink tagType="condition" name={c} />
@@ -55,7 +58,7 @@ export function ConditionsSection({ conditions, edition, exhaustionLevel = 0, on
       {available.length > 0 && (
         <Menu shadow="md" width={180}>
           <Menu.Target>
-            <Button size="compact-xs" variant="subtle" color="dimmed">+ condition</Button>
+            <Button size="compact-xs" variant="subtle" color="parchment.6">+ condition</Button>
           </Menu.Target>
           <Menu.Dropdown>
             {available.map((c) => (

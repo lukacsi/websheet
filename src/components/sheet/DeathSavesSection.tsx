@@ -22,7 +22,7 @@ export function DeathSavesSection({ deathSaves, onChange }: Props) {
         {[0, 1, 2].map((i) => (
           <Checkbox
             key={`s${i}`}
-            size="xs"
+            size="sm"
             checked={deathSaves.successes > i}
             onChange={() => {
               const next = deathSaves.successes > i ? i : i + 1;
@@ -36,7 +36,7 @@ export function DeathSavesSection({ deathSaves, onChange }: Props) {
         {[0, 1, 2].map((i) => (
           <Checkbox
             key={`f${i}`}
-            size="xs"
+            size="sm"
             color="bloodRed"
             checked={deathSaves.failures > i}
             onChange={() => {
