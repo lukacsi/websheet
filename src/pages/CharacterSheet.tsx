@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Container, Text, TextInput, Group, Stack, Grid, Paper,
-  LoadingOverlay, Button, Checkbox, Select, NumberInput, Tabs,
+  LoadingOverlay, Button, Checkbox, Select, NumberInput, Tabs, ActionIcon,
 } from '@mantine/core';
-import { IconMoon, IconCampfire } from '@tabler/icons-react';
+import { IconMoon, IconCampfire, IconPencil, IconCheck } from '@tabler/icons-react';
 import { numOrDefault } from '@/utils/form-helpers';
 import { surfaceStyle } from '@/theme/styles';
 import { WikiLink } from '@/components/wiki/WikiLink';
@@ -37,6 +37,7 @@ export function CharacterSheet() {
   const sheet = useCharacterSheet(id);
   const { character, update, loading, dirty, savedId, save } = sheet;
   const [activeTab, setActiveTab] = useState<string | null>('combat');
+  const [editIdentity, setEditIdentity] = useState(false);
 
   if (loading) {
     return (
@@ -50,105 +51,87 @@ export function CharacterSheet() {
     <Container fluid px="md" py={0}>
       {/* ── Header ── */}
       <Paper p="xs" mb="xs" style={surfaceStyle}>
-        <Grid gutter="xs">
-          <Grid.Col span={{ base: 12, sm: 2.5 }}>
-            <TextInput
-              value={character.name}
-              onChange={(e) => update({ name: e.currentTarget.value })}
-              size="sm"
-              placeholder="Character Name"
-              styles={{ input: { fontFamily: 'Cinzel, serif', fontWeight: 700, fontSize: 22, color: 'var(--mantine-color-gold-3)' } }}
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 6, sm: 2 }}>
-            <Stack gap={0}>
+        {/* Row 1: Identity */}
+        <Group gap="sm" align="center" wrap="wrap">
+          <TextInput
+            value={character.name}
+            onChange={(e) => update({ name: e.currentTarget.value })}
+            size="sm"
+            placeholder="Character Name"
+            styles={{ input: { fontFamily: 'Cinzel, serif', fontWeight: 700, fontSize: 22, color: 'var(--mantine-color-gold-3)' } }}
+            style={{ flex: '0 0 auto', minWidth: 200 }}
+          />
+
+          {editIdentity ? (
+            <>
               <Select
                 data={sheet.raceSelectData}
                 value={character.subraceId ? `${character.raceId}::${character.subraceId}` : (character.raceId || null)}
                 onChange={sheet.handleRaceChange}
-                searchable
-                clearable
-                size="xs"
-                placeholder="Race"
+                searchable clearable size="xs" placeholder="Race"
+                style={{ flex: '1 1 140px', minWidth: 140 }}
               />
-              {character.raceName && (
-                <Group gap={4}>
-                  <WikiLink tagType="race" name={character.raceName} />
-                  {character.subraceName && (
-                    <Text size="xs" c="parchment.6">({character.subraceName})</Text>
-                  )}
-                </Group>
-              )}
-            </Stack>
-          </Grid.Col>
-          <Grid.Col span={{ base: 6, sm: 1.5 }}>
-            <Stack gap={0}>
               <Select
                 data={sheet.classSelectData}
                 value={character.classes[0]?.classId || null}
                 onChange={sheet.handleClassChange}
-                searchable
-                clearable
-                size="xs"
-                placeholder="Class"
+                searchable clearable size="xs" placeholder="Class"
+                style={{ flex: '1 1 130px', minWidth: 130 }}
               />
-              {character.classes[0]?.className && (
-                <WikiLink tagType="class" name={character.classes[0].className} />
-              )}
-            </Stack>
-          </Grid.Col>
-          {sheet.currentClass && sheet.subclassSelectData.length > 0 && (
-            <Grid.Col span={{ base: 6, sm: 1.5 }}>
-              <Stack gap={0}>
+              {sheet.currentClass && sheet.subclassSelectData.length > 0 && (
                 <Select
                   data={sheet.subclassSelectData}
                   value={character.classes[0]?.subclassId || null}
                   onChange={sheet.handleSubclassChange}
-                  searchable
-                  clearable
-                  size="xs"
+                  searchable clearable size="xs"
                   placeholder={sheet.currentClass.subclassTitle || 'Subclass'}
+                  style={{ flex: '1 1 130px', minWidth: 130 }}
                 />
-                {character.classes[0]?.subclassName && (
-                  <WikiLink tagType="subclass" name={character.classes[0].subclassName} />
-                )}
-              </Stack>
-            </Grid.Col>
-          )}
-          <Grid.Col span={{ base: 6, sm: 1.5 }}>
-            <Stack gap={0}>
+              )}
               <Select
                 data={sheet.bgSelectData}
                 value={character.backgroundId || null}
                 onChange={sheet.handleBackgroundChange}
-                searchable
-                clearable
-                size="xs"
-                placeholder="Background"
+                searchable clearable size="xs" placeholder="Background"
+                style={{ flex: '1 1 140px', minWidth: 140 }}
               />
-              {character.backgroundName && (
-                <WikiLink tagType="background" name={character.backgroundName} />
+              <ActionIcon variant="subtle" size="sm" color="gold" onClick={() => setEditIdentity(false)}>
+                <IconCheck size={14} />
+              </ActionIcon>
+            </>
+          ) : (
+            <Group gap="xs" align="center" style={{ flex: 1 }}>
+              {character.raceName && (
+                <>
+                  <WikiLink tagType="race" name={character.raceName} />
+                  {character.subraceName && (
+                    <Text size="sm" c="parchment.6">({character.subraceName})</Text>
+                  )}
+                </>
               )}
-            </Stack>
-          </Grid.Col>
-          <Grid.Col span={{ base: 3, sm: 1.5 }}>
-            <TextInput
-              value={character.alignment ?? ''}
-              onChange={(e) => update({ alignment: e.currentTarget.value })}
-              size="xs"
-              placeholder="Alignment"
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 3, sm: 1.5 }}>
-            <TextInput
-              value={character.playerName ?? ''}
-              onChange={(e) => update({ playerName: e.currentTarget.value })}
-              size="xs"
-              placeholder="Player"
-            />
-          </Grid.Col>
-        </Grid>
+              {character.raceName && character.classes[0]?.className && (
+                <Text c="parchment.6">&middot;</Text>
+              )}
+              {character.classes[0]?.className && (
+                <WikiLink tagType="class" name={character.classes[0].className} />
+              )}
+              {character.classes[0]?.subclassName && (
+                <Text size="sm" c="parchment.6">({character.classes[0].subclassName})</Text>
+              )}
+              {character.backgroundName && (
+                <>
+                  <Text c="parchment.6">&middot;</Text>
+                  <WikiLink tagType="background" name={character.backgroundName} />
+                </>
+              )}
+              <ActionIcon variant="subtle" size="sm" c="parchment.6" onClick={() => setEditIdentity(true)}>
+                <IconPencil size={14} />
+              </ActionIcon>
+            </Group>
+          )}
+        </Group>
 
+        {/* Row 2: Actions */}
         <Group gap="sm" mt={4} pt={6} style={{ borderTop: '1px solid rgba(191, 157, 100, 0.1)' }}>
           <Checkbox
             label="Inspiration"
@@ -156,35 +139,14 @@ export function CharacterSheet() {
             onChange={(e) => update({ inspiration: e.currentTarget.checked })}
             size="xs"
           />
-          <Select
-            value={character.edition}
-            onChange={(v) => update({ edition: (v ?? 'one') as 'one' | 'classic' })}
-            data={[
-              { value: 'one', label: '2024' },
-              { value: 'classic', label: '2014' },
-            ]}
-            size="xs"
-            w={75}
-          />
-          <NumberInput
-            value={character.xp ?? 0}
-            onChange={(v) => update({ xp: numOrDefault(v, 0) })}
-            min={0}
-            size="xs"
-            w={90}
-            placeholder="XP"
-          />
-          <Button size="compact-xs" variant="light" color="parchment" onClick={sheet.shortRest} leftSection={<IconMoon size={14} />}>
+          <Button size="compact-sm" variant="filled" color="parchment" onClick={sheet.shortRest} leftSection={<IconMoon size={14} />}>
             Short Rest
           </Button>
-          <Button size="compact-xs" variant="light" color="gold" onClick={sheet.longRest} leftSection={<IconCampfire size={14} />}>
+          <Button size="compact-sm" variant="filled" color="gold" onClick={sheet.longRest} leftSection={<IconCampfire size={14} />}>
             Long Rest
           </Button>
           <div style={{ flex: 1 }} />
-          <Text size="xs" c={dirty ? 'gold.4' : 'parchment.6'}>
-            {dirty ? 'Unsaved...' : (savedId ? 'Saved' : 'New')}
-          </Text>
-          <Button size="compact-xs" variant={dirty ? 'filled' : 'light'} color={dirty ? 'gold' : undefined} onClick={() => save(character)}>
+          <Button size="compact-sm" variant={dirty ? 'filled' : 'light'} color={dirty ? 'gold' : undefined} onClick={() => save(character)}>
             {savedId ? 'Save' : 'Create'}
           </Button>
         </Group>
@@ -345,6 +307,40 @@ export function CharacterSheet() {
 
           <Tabs.Panel value="about">
             <Stack gap="md">
+              <div>
+                <SectionTitle>Character Details</SectionTitle>
+                <Group grow gap="md">
+                  <Select
+                    label="Edition"
+                    data={[
+                      { value: 'one', label: '2024' },
+                      { value: 'classic', label: '2014' },
+                    ]}
+                    value={character.edition}
+                    onChange={(v) => update({ edition: (v ?? 'one') as 'one' | 'classic' })}
+                    size="xs"
+                  />
+                  <NumberInput
+                    label="XP"
+                    value={character.xp ?? 0}
+                    onChange={(v) => update({ xp: numOrDefault(v, 0) })}
+                    min={0}
+                    size="xs"
+                  />
+                  <TextInput
+                    label="Alignment"
+                    value={character.alignment ?? ''}
+                    onChange={(e) => update({ alignment: e.currentTarget.value })}
+                    size="xs"
+                  />
+                  <TextInput
+                    label="Player"
+                    value={character.playerName ?? ''}
+                    onChange={(e) => update({ playerName: e.currentTarget.value })}
+                    size="xs"
+                  />
+                </Group>
+              </div>
               <div>
                 <SectionTitle>Personality</SectionTitle>
                 <PersonalitySection

@@ -199,7 +199,7 @@ Actionable tickets based on the visual UX review (`review/UX-REVIEW.md`). Each i
 | 2 | ~~UX-02~~ | ~~Combat info behind tabs = worse than paper~~ | **Done** |
 | 3 | ~~UX-03~~ | ~~Wizard nav scrolls off + empty steps look broken~~ | **Done** |
 | 4 | ~~UX-04~~ | ~~Inventory overflow = visible layout bug~~ | **Done** |
-| 5 | UX-05 | Header clutter hurts whole sheet perception | Fix |
+| 5 | ~~UX-05~~ | ~~Header clutter hurts whole sheet perception~~ | **Done** |
 | 6 | UX-06 | Right sidebar components too small/empty | Fix |
 | 7 | UX-07 | Home page = first impression, currently flat | Fix |
 | 8 | UX-08 | Review step has actual data bugs | Fix |
