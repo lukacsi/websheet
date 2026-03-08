@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Container, Title, Text, TextInput, Group, Stack, Grid, Paper,
+  Container, Text, TextInput, Group, Stack, Grid, Paper,
   LoadingOverlay, Button, Checkbox, Select, NumberInput, Tabs,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
@@ -12,6 +12,8 @@ import { abilityModifier } from '@/types';
 import {
   proficiencyBonus as calcProfBonus,
 } from '@/utils/derived-stats';
+import { numOrDefault } from '@/utils/form-helpers';
+import { darkPaperStyle } from '@/theme/styles';
 import { WikiLink } from '@/components/wiki/WikiLink';
 import { useClasses, useSubclasses } from '@/hooks/useClasses';
 import { useRaces } from '@/hooks/useRaces';
@@ -36,6 +38,7 @@ import { FeaturesSection } from '@/components/sheet/FeaturesSection';
 import { PersonalitySection } from '@/components/sheet/PersonalitySection';
 import { AppearanceSection } from '@/components/sheet/AppearanceSection';
 import { BackstorySection } from '@/components/sheet/BackstorySection';
+import { SectionTitle } from '@/components/sheet/SectionTitle';
 
 const DEFAULT_CHARACTER: Character = {
   name: '',
@@ -89,21 +92,6 @@ const DEFAULT_CHARACTER: Character = {
   inspiration: false,
   notes: '',
 };
-
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <Title
-      order={5}
-      tt="uppercase"
-      c="parchment.4"
-      mb="xs"
-      pb={4}
-      style={{ borderBottom: '1px solid var(--mantine-color-dark-5)' }}
-    >
-      {children}
-    </Title>
-  );
-}
 
 /* Header height for viewport calc — adjust if header design changes */
 const HEADER_HEIGHT = 110;
@@ -454,14 +442,7 @@ export function CharacterSheet() {
   return (
     <Container fluid px="md" py={0}>
       {/* ── Header ── */}
-      <Paper
-        p="xs"
-        mb="xs"
-        style={{
-          backgroundColor: 'var(--mantine-color-dark-7)',
-          border: '1px solid var(--mantine-color-dark-5)',
-        }}
-      >
+      <Paper p="xs" mb="xs" style={darkPaperStyle}>
         <Grid gutter="xs">
           <Grid.Col span={{ base: 12, sm: 2.5 }}>
             <TextInput
@@ -580,7 +561,7 @@ export function CharacterSheet() {
           />
           <NumberInput
             value={character.xp ?? 0}
-            onChange={(v) => update({ xp: typeof v === 'number' ? v : 0 })}
+            onChange={(v) => update({ xp: numOrDefault(v, 0) })}
             min={0}
             size="xs"
             w={90}
