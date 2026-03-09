@@ -57,12 +57,13 @@ export async function lookupEntity(
   const collection = COLLECTION_MAP[tagType];
   if (!collection) return null;
 
+  // Use ~ (case-insensitive contains) for name matching — PB stores "Acrobatics"
+  // but Skill types use "acrobatics", "sleight of hand" vs "Sleight of Hand", etc.
   let filter: string;
   if (source) {
-    filter = `name="${escapeFilter(name)}" && source="${escapeFilter(source)}"`;
+    filter = `name~"${escapeFilter(name)}" && source="${escapeFilter(source)}"`;
   } else {
-    // Prefer edition="one" (2024 rules) when no source given
-    filter = `name="${escapeFilter(name)}"`;
+    filter = `name~"${escapeFilter(name)}"`;
   }
 
   try {

@@ -1,4 +1,4 @@
-import { Table, Checkbox, Text, Badge } from '@mantine/core';
+import { Table, Checkbox, Text } from '@mantine/core';
 import type { AbilityScores, Skill } from '@/types';
 import { SKILL_ABILITY } from '@/types';
 import { skillModifier, formatModifier } from '@/utils/derived-stats';
@@ -6,6 +6,13 @@ import { WikiLink } from '@/components/wiki/WikiLink';
 import { toggleArrayItem } from '@/utils/form-helpers';
 
 const SKILLS = Object.keys(SKILL_ABILITY).sort() as Skill[];
+
+const LOWERCASE_WORDS = new Set(['of', 'the', 'a', 'an', 'and', 'or', 'in', 'on', 'at', 'to', 'for']);
+function titleCase(s: string): string {
+  return s.split(' ').map((w, i) =>
+    i === 0 || !LOWERCASE_WORDS.has(w) ? w.charAt(0).toUpperCase() + w.slice(1) : w
+  ).join(' ');
+}
 
 const ABILITY_ABBR: Record<string, string> = {
   str: 'STR', dex: 'DEX', con: 'CON',
@@ -53,7 +60,7 @@ export function SkillsSection({
             : prof
               ? { borderLeft: '2px solid var(--mantine-color-inkBrown-7)' }
               : { opacity: 0.6 };
-          const modColor = mod > 0 ? undefined : mod < 0 ? 'red.4' : 'dimmed';
+          const modColor = mod > 0 ? undefined : mod < 0 ? 'bloodRed.4' : 'parchment.6';
           return (
             <Table.Tr key={skill} style={rowStyle}>
               <Table.Td w={30}>
@@ -77,10 +84,10 @@ export function SkillsSection({
                 <Text size="sm" fw={600} c={modColor}>{formatModifier(mod)}</Text>
               </Table.Td>
               <Table.Td>
-                <WikiLink tagType="skill" name={skill} />
+                <WikiLink tagType="skill" name={skill} displayText={titleCase(skill)} />
               </Table.Td>
               <Table.Td w={40}>
-                <Badge size="xs" variant="light" color="gray">{ABILITY_ABBR[abilityKey]}</Badge>
+                <Text size="xs" c="parchment.5" fw={500}>{ABILITY_ABBR[abilityKey]}</Text>
               </Table.Td>
             </Table.Tr>
           );
