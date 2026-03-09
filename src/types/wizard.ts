@@ -88,7 +88,7 @@ export const STEP_FIELDS: (keyof WizardFormData)[][] = [
   ['backgroundId', 'chosenBackgroundTools', 'chosenBackgroundLanguages'], // Step 2: Background
   ['raceId', 'chosenRaceLanguages', 'chosenResistance'],             // Step 3: Species
   ['abilityMethod', 'baseAbilities'],                                // Step 4: Ability Scores
-  ['passphrase', 'passphraseConfirm'],                               // Step 5: Review
+  [],                                                                  // Step 5: Review (passphrase via modal)
 ];
 
 export const WIZARD_DEFAULTS: WizardFormData = {

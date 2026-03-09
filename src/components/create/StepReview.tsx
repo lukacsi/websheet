@@ -1,4 +1,4 @@
-import { Stack, Text, PasswordInput, Table, Group, Divider, Title } from '@mantine/core';
+import { Stack, Text, Table, Group, Divider, Title } from '@mantine/core';
 import { useFormContext } from 'react-hook-form';
 import type { WizardFormData } from '@/types/wizard';
 import type { AbilityKey } from '@/types';
@@ -11,7 +11,7 @@ import { finalAbilities, formatModifier, calculateHp, calculateAc, calculateInit
 const ABILITIES: AbilityKey[] = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
 
 export function StepReview() {
-  const { register, watch, formState: { errors } } = useFormContext<WizardFormData>();
+  const { watch } = useFormContext<WizardFormData>();
   const form = watch();
 
   const { race } = useRace(form.raceId || undefined);
@@ -64,25 +64,25 @@ export function StepReview() {
       {/* Combat stats */}
       <Group gap="lg">
         <Stack gap={2}>
-          <Text size="xs" c="parchment.5">HP</Text>
-          <Text fw={700} size="lg">{hp}</Text>
+          <Text size="sm" c="parchment.5">HP</Text>
+          <Text fw={700} size="xl">{hp}</Text>
         </Stack>
         <Stack gap={2}>
-          <Text size="xs" c="parchment.5">AC</Text>
-          <Text fw={700} size="lg">{ac}</Text>
+          <Text size="sm" c="parchment.5">AC</Text>
+          <Text fw={700} size="xl">{ac}</Text>
         </Stack>
         <Stack gap={2}>
-          <Text size="xs" c="parchment.5">Initiative</Text>
-          <Text fw={700} size="lg">{formatModifier(initiative)}</Text>
+          <Text size="sm" c="parchment.5">Initiative</Text>
+          <Text fw={700} size="xl">{formatModifier(initiative)}</Text>
         </Stack>
         <Stack gap={2}>
-          <Text size="xs" c="parchment.5">Prof. Bonus</Text>
-          <Text fw={700} size="lg">{formatModifier(profBonus)}</Text>
+          <Text size="sm" c="parchment.5">Prof. Bonus</Text>
+          <Text fw={700} size="xl">{formatModifier(profBonus)}</Text>
         </Stack>
         {cls && (
           <Stack gap={2}>
-            <Text size="xs" c="parchment.5">Hit Die</Text>
-            <Text fw={700} size="lg">d{cls.hitDie}</Text>
+            <Text size="sm" c="parchment.5">Hit Die</Text>
+            <Text fw={700} size="xl">d{cls.hitDie}</Text>
           </Stack>
         )}
       </Group>
@@ -125,43 +125,23 @@ export function StepReview() {
             <Text size="sm" fw={500}>Saving Throws:</Text>
             <Text size="sm">{cls.savingThrows.map(a => ABILITY_NAMES[a]).join(', ')}</Text>
           </Group>
-          {form.chosenSkills.length > 0 && (
-            <Group gap="xs" wrap="wrap">
-              <Text size="sm" fw={500}>Skills:</Text>
-              <Text size="sm">
-                {[
-                  ...form.chosenSkills.map(s => s.replace(/\b\w/g, c => c.toUpperCase())),
-                  ...(background?.skillProficiencies ?? []).map(s => s.replace(/\b\w/g, c => c.toUpperCase())),
-                ].join(', ')}
-              </Text>
-            </Group>
-          )}
+          {(() => {
+            const allSkills = [
+              ...form.chosenSkills,
+              ...(background?.skillProficiencies ?? []),
+            ];
+            const unique = [...new Set(allSkills.map(s => s.toLowerCase()))];
+            return unique.length > 0 ? (
+              <Group gap="xs" wrap="wrap">
+                <Text size="sm" fw={500}>Skills:</Text>
+                <Text size="sm">
+                  {unique.map(s => s.replace(/\b\w/g, c => c.toUpperCase())).join(', ')}
+                </Text>
+              </Group>
+            ) : null;
+          })()}
         </>
       )}
-
-      <Divider color="dark.4" />
-
-      {/* Passphrase */}
-      <Stack gap="xs">
-        <Text size="sm" fw={500}>Set a passphrase to protect this character</Text>
-        <Text size="xs" c="parchment.6">
-          You'll need this passphrase to load and edit your character later.
-        </Text>
-        <PasswordInput
-          label="Passphrase"
-          placeholder="At least 4 characters"
-          required
-          error={errors.passphrase?.message}
-          {...register('passphrase')}
-        />
-        <PasswordInput
-          label="Confirm Passphrase"
-          placeholder="Repeat your passphrase"
-          required
-          error={errors.passphraseConfirm?.message}
-          {...register('passphraseConfirm')}
-        />
-      </Stack>
     </Stack>
   );
 }

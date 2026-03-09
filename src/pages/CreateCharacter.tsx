@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Container, Stepper, Button, Group, Title, Alert, Paper } from '@mantine/core';
+import { Container, Stepper, Button, Group, Title, Alert, Paper, Modal, Stack, PasswordInput, Text } from '@mantine/core';
 import { useForm, FormProvider, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { notifications } from '@mantine/notifications';
-import { IconAlertCircle } from '@tabler/icons-react';
+import { IconAlertCircle, IconLock } from '@tabler/icons-react';
 import type { WizardFormData } from '@/types/wizard';
 import { wizardSchema, WIZARD_DEFAULTS, STEP_FIELDS } from '@/types/wizard';
 import { useCreateCharacter } from '@/hooks/useCreateCharacter';
@@ -20,6 +20,8 @@ const STEP_LABELS = ['Basics', 'Class', 'Background', 'Species', 'Abilities', 'R
 
 export function CreateCharacter() {
   const [active, setActive] = useState(0);
+  const [passphraseOpen, setPassphraseOpen] = useState(false);
+  const [passphraseError, setPassphraseError] = useState('');
   const navigate = useNavigate();
   const { createCharacter, saving, error: saveError } = useCreateCharacter();
 
@@ -29,7 +31,7 @@ export function CreateCharacter() {
     mode: 'onTouched',
   });
 
-  const { trigger } = methods;
+  const { trigger, setValue, getValues } = methods;
 
   async function handleNext() {
     const fieldsToValidate = STEP_FIELDS[active];
@@ -43,13 +45,29 @@ export function CreateCharacter() {
     setActive(prev => Math.max(prev - 1, 0));
   }
 
+  function handleCreateClick() {
+    setPassphraseError('');
+    setPassphraseOpen(true);
+  }
+
   async function handleSubmit() {
+    const formData = getValues();
+
+    if (formData.passphrase.length < 4) {
+      setPassphraseError('Passphrase must be at least 4 characters');
+      return;
+    }
+    if (formData.passphrase !== formData.passphraseConfirm) {
+      setPassphraseError('Passphrases must match');
+      return;
+    }
+
     const valid = await trigger();
     if (!valid) return;
 
-    const formData = methods.getValues();
     const character = await createCharacter(formData);
     if (character?.id) {
+      setPassphraseOpen(false);
       notifications.show({
         title: 'Character created!',
         message: `${formData.name} is ready for adventure.`,
@@ -120,14 +138,52 @@ export function CreateCharacter() {
           </Button>
         ) : (
           <Button
-            onClick={handleSubmit}
+            onClick={handleCreateClick}
             color="gold"
-            loading={saving}
+            leftSection={<IconLock size={16} />}
           >
             Create Character
           </Button>
         )}
       </Group>
+
+      <Modal
+        opened={passphraseOpen}
+        onClose={() => setPassphraseOpen(false)}
+        title="Set a Passphrase"
+        centered
+        styles={{
+          content: { backgroundColor: 'var(--mantine-color-dark-7)' },
+          header: { backgroundColor: 'var(--mantine-color-dark-7)' },
+        }}
+      >
+        <Stack gap="md">
+          <Text size="sm" c="parchment.5">
+            You'll need this passphrase to load and edit your character later.
+          </Text>
+          <PasswordInput
+            label="Passphrase"
+            placeholder="At least 4 characters"
+            required
+            onChange={(e) => setValue('passphrase', e.currentTarget.value)}
+          />
+          <PasswordInput
+            label="Confirm Passphrase"
+            placeholder="Repeat your passphrase"
+            required
+            onChange={(e) => setValue('passphraseConfirm', e.currentTarget.value)}
+          />
+          {passphraseError && (
+            <Text size="sm" c="bloodRed">{passphraseError}</Text>
+          )}
+          {saveError && (
+            <Text size="sm" c="bloodRed">{saveError}</Text>
+          )}
+          <Button onClick={handleSubmit} color="gold" loading={saving} fullWidth>
+            Create Character
+          </Button>
+        </Stack>
+      </Modal>
     </Container>
   );
 }

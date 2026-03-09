@@ -202,7 +202,7 @@ Actionable tickets based on the visual UX review (`review/UX-REVIEW.md`). Each i
 | 5 | ~~UX-05~~ | ~~Header clutter hurts whole sheet perception~~ | **Done** |
 | 6 | ~~UX-06~~ | ~~Right sidebar components too small/empty~~ | **Done** |
 | 7 | ~~UX-07~~ | ~~Home page = first impression, currently flat~~ | **Done** |
-| 8 | UX-08 | Review step has actual data bugs | Fix |
+| 8 | ~~UX-08~~ | ~~Review step has actual data bugs~~ | **Done** |
 | 9 | UX-09 | "Not found" tooltips look broken | Fix |
 | 10 | UX-10 | Load page feels unfinished | Fix |
 | 11 | UX-11 | Color consistency sweep | Fix |
