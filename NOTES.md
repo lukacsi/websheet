@@ -1,5 +1,26 @@
 # Notes — WebSheet
 
+## 2026-03-09 — Character Management Improvements + Review
+
+**Context:** Four quality-of-life improvements needed: optional passphrase in wizard, passphrase for blank sheets, export/import JSON, localStorage-based recent characters (PB sort was broken). After implementation, thorough browser review uncovered additional bugs.
+
+**Decisions:**
+- Passphrase validation: empty = skip, non-empty = require 4+ chars + confirmation match (both wizard and blank sheet modal)
+- Export strips PB metadata AND passphraseHash; import strips passphraseHash so imported characters are unprotected
+- Recent characters stored in localStorage (max 8, deduped by ID) — tracked on both load and save
+- Auto-save guard: new blank sheets must go through Create button + passphrase modal before first save (uses `savedIdRef` to avoid stale closure)
+- 2024 (XPHB) race languages: 5e.tools source data omits `languageProficiencies` for 2024 content — fixed at import level by defaulting to Common + choose 2 standard languages
+
+**Done:**
+- Optional passphrase in wizard (skip button, conditional validation)
+- Passphrase modal for blank sheet creation (skip or set)
+- Export JSON button on character sheet, Import button on Load page
+- localStorage recent characters on Home page
+- Fixed: auto-save bypassed passphrase modal on blank sheets
+- Fixed: export leaked passphraseHash in JSON
+- Fixed: 2024 races had no language data — import now defaults Common + 2 choices
+- Full browser review: wizard flow, blank sheet flow, export/import, passphrase lock/unlock, recent characters
+
 ## 2026-03-09 — UX Tickets Implementation (UX-01 through UX-06)
 
 **Context:** 11 UX tickets from review, working through them by priority. 4 of the top 6 done in previous session (UX-01, UX-02, UX-04 already committed), continuing with remaining tickets.

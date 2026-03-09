@@ -40,7 +40,16 @@ function StatBox({ label, children, extraStyle, labelColor }: {
 }
 
 export function CombatSidebar({ character, calculatedInitiative, calculatedProfBonus, onChange }: Props) {
-  const isDamaged = character.hp < character.maxHp;
+  const hpPct = character.maxHp > 0
+    ? Math.min(100, Math.max(0, (character.hp / character.maxHp) * 100))
+    : 100;
+  const hpBorderColor = hpPct >= 100
+    ? 'var(--mantine-color-parchment-8)'
+    : hpPct > 50
+      ? 'var(--mantine-color-parchment-6)'
+      : hpPct > 25
+        ? 'var(--mantine-color-gold-7)'
+        : 'var(--mantine-color-bloodRed-5)';
 
   return (
     <Stack gap="xs">
@@ -49,12 +58,8 @@ export function CombatSidebar({ character, calculatedInitiative, calculatedProfB
         p="xs"
         style={{
           ...elevatedStyle,
-          ...(isDamaged
-            ? {
-                border: '1px solid var(--mantine-color-bloodRed-5)',
-                boxShadow: '0 0 10px rgba(184, 34, 34, 0.25), 0 2px 8px rgba(0, 0, 0, 0.35)',
-              }
-            : {}),
+          borderBottom: `3px solid ${hpBorderColor}`,
+          transition: 'border-color 0.3s ease',
         }}
       >
         <Group gap="sm" align="center" wrap="nowrap">
