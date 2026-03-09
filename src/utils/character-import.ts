@@ -3,10 +3,14 @@ import type { Character } from '@/types';
 /** PocketBase metadata fields to strip on export */
 const PB_FIELDS = ['id', 'collectionId', 'collectionName', 'created', 'updated', 'createdAt', 'updatedAt'];
 
-/** Export a character as a clean JSON string (strips PB metadata) */
+/** Sensitive fields to strip on export */
+const SENSITIVE_FIELDS = ['passphraseHash'];
+
+/** Export a character as a clean JSON string (strips PB metadata and sensitive fields) */
 export function exportCharacter(char: Character): string {
+  const stripKeys = [...PB_FIELDS, ...SENSITIVE_FIELDS];
   const clean = Object.fromEntries(
-    Object.entries(char).filter(([key]) => !PB_FIELDS.includes(key)),
+    Object.entries(char).filter(([key]) => !stripKeys.includes(key)),
   );
   return JSON.stringify(clean, null, 2);
 }

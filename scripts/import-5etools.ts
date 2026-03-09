@@ -715,10 +715,20 @@ async function importRaces(): Promise<{ created: number; updated: number }> {
       }
     }
 
+    // 2024 (XPHB) races don't list languages — all characters get Common + 2 choices
+    const raceEdition = edition(r.source, r.edition);
+    const hasLangData = languages.length > 0 || r.languageProficiencies?.length > 0;
+    const effectiveLanguages = !hasLangData && raceEdition === "one"
+      ? ["Common"]
+      : languages;
+    const effectiveLangChoices = !hasLangData && raceEdition === "one"
+      ? [{ type: "anyStandard" as const, count: 2 }]
+      : parseLanguageChoices(r.languageProficiencies);
+
     const record = {
       name: r.name,
       source: r.source,
-      edition: edition(r.source, r.edition),
+      edition: raceEdition,
       size: r.size || ["M"],
       speed,
       darkvision: r.darkvision || 0,
@@ -735,8 +745,8 @@ async function importRaces(): Promise<{ created: number; updated: number }> {
       weaponProficiencies: extractProfNames(r.weaponProficiencies),
       toolProficiencies: extractProfNames(r.toolProficiencies),
       toolChoices: parseProfChoices(r.toolProficiencies),
-      languages,
-      languageChoices: parseLanguageChoices(r.languageProficiencies),
+      languages: effectiveLanguages,
+      languageChoices: effectiveLangChoices,
       traits: r.entries || [],
     };
 

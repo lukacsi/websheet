@@ -72,6 +72,7 @@ export function useCharacterSheet(id: string | undefined) {
   const [character, setCharacter] = useState<Character>(DEFAULT_CHARACTER);
   const [loading, setLoading] = useState(!isNew);
   const [savedId, setSavedId] = useState<string | undefined>(isNew ? undefined : id);
+  const savedIdRef = useRef(savedId);
   const [dirty, setDirty] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -120,6 +121,7 @@ export function useCharacterSheet(id: string | undefined) {
           const merged = { ...DEFAULT_CHARACTER, ...clean };
           setCharacter(merged);
           setSavedId(c.id);
+          savedIdRef.current = c.id;
           if (c.id) {
             addRecentCharacter({
               id: c.id,
@@ -156,6 +158,7 @@ export function useCharacterSheet(id: string | undefined) {
         const created = await createRecord<Character>('characters', char as unknown as Record<string, unknown>);
         charId = created.id;
         setSavedId(created.id);
+        savedIdRef.current = created.id;
         navigate(`/character/${created.id}`, { replace: true });
       }
       setDirty(false);
@@ -182,7 +185,10 @@ export function useCharacterSheet(id: string | undefined) {
       const next = { ...prev, ...partial };
       setDirty(true);
       clearTimeout(saveTimer.current);
-      saveTimer.current = setTimeout(() => save(next), 1500);
+      // Only auto-save if character has been saved before (has an ID)
+      if (savedIdRef.current) {
+        saveTimer.current = setTimeout(() => save(next), 1500);
+      }
       return next;
     });
   }
