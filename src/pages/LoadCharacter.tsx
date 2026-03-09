@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container, Title, TextInput, Stack, Card, Text, Group, Badge,
-  Button, PasswordInput, Loader,
+  Button, PasswordInput, Loader, Modal, Center,
 } from '@mantine/core';
+import { IconSearch, IconLock } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import pb from '@/api/pocketbase';
 import { verifyPassphrase } from '@/utils/passphrase';
@@ -23,31 +24,48 @@ interface CharacterSummary {
 export function LoadCharacter() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
-  const [results, setResults] = useState<CharacterSummary[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false);
+  const [allChars, setAllChars] = useState<CharacterSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
 
-  // Passphrase prompt state
+  // Passphrase modal state
   const [promptChar, setPromptChar] = useState<CharacterSummary | null>(null);
   const [passphrase, setPassphrase] = useState('');
   const [verifying, setVerifying] = useState(false);
 
-  async function handleSearch() {
-    const term = search.trim();
-    if (!term) return;
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Load all characters on mount
+  useEffect(() => {
+    fetchCharacters('');
+  }, []);
+
+  async function fetchCharacters(term: string) {
     setLoading(true);
-    setSearched(true);
     try {
-      const records = await pb.collection('characters').getList(1, 20, {
-        filter: `name~"${term.replace(/"/g, '\\"')}"`,
-        sort: '-updated',
-      });
-      setResults(records.items as unknown as CharacterSummary[]);
+      const options: Record<string, unknown> = {
+        sort: 'name',
+        requestKey: `load-chars-${Date.now()}`,
+      };
+      if (term) {
+        options.filter = `name~"${term.replace(/"/g, '\\"')}"`;
+      }
+      const records = await pb.collection('characters').getList(1, 50, options);
+      setAllChars(records.items as unknown as CharacterSummary[]);
     } catch {
-      setResults([]);
+      setAllChars([]);
     } finally {
       setLoading(false);
+      setInitialLoad(false);
     }
+  }
+
+  function handleSearchChange(value: string) {
+    setSearch(value);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchCharacters(value.trim());
+    }, 300);
   }
 
   function handleSelect(char: CharacterSummary) {
@@ -81,27 +99,32 @@ export function LoadCharacter() {
     <Container size="md" py="xl">
       <Title order={2} mb="lg">Load Character</Title>
 
-      <Group gap="xs" mb="lg">
-        <TextInput
-          placeholder="Search by character name..."
-          value={search}
-          onChange={(e) => setSearch(e.currentTarget.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          style={{ flex: 1 }}
-        />
-        <Button onClick={handleSearch} loading={loading}>
-          Search
-        </Button>
-      </Group>
+      <TextInput
+        placeholder="Filter by name..."
+        leftSection={<IconSearch size={16} />}
+        value={search}
+        onChange={(e) => handleSearchChange(e.currentTarget.value)}
+        mb="lg"
+      />
 
-      {loading && <Loader size="sm" />}
+      {loading && initialLoad && (
+        <Center py="xl"><Loader size="sm" /></Center>
+      )}
 
-      {!loading && searched && results.length === 0 && (
-        <Text c="parchment.6">No characters found.</Text>
+      {!loading && allChars.length === 0 && !search && (
+        <Card padding="lg" style={cardStyle}>
+          <Text c="parchment.5" ta="center">
+            No characters yet — <Text component="a" href="/create" c="gold" inherit>create your first one</Text>.
+          </Text>
+        </Card>
+      )}
+
+      {!loading && allChars.length === 0 && search && (
+        <Text c="parchment.6">No characters matching &ldquo;{search}&rdquo;</Text>
       )}
 
       <Stack gap="sm">
-        {results.map((char) => (
+        {allChars.map((char) => (
           <Card
             key={char.id}
             padding="md"
@@ -118,38 +141,45 @@ export function LoadCharacter() {
                 </Group>
               </div>
               {char.passphraseHash && (
-                <Badge size="xs" variant="outline" color="gray">Protected</Badge>
+                <IconLock size={16} style={{ opacity: 0.5 }} />
               )}
             </Group>
           </Card>
         ))}
       </Stack>
 
-      {/* Passphrase prompt modal-style */}
-      {promptChar && (
-        <Card
-          padding="lg"
-          mt="lg"
-          style={elevatedStyle}
-        >
-          <Text fw={600} mb="sm">Enter passphrase for {promptChar.name}</Text>
+      {/* Passphrase modal */}
+      <Modal
+        opened={!!promptChar}
+        onClose={() => setPromptChar(null)}
+        title={
           <Group gap="xs">
-            <PasswordInput
-              placeholder="Passphrase"
-              value={passphrase}
-              onChange={(e) => setPassphrase(e.currentTarget.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
-              style={{ flex: 1 }}
-            />
-            <Button onClick={handleVerify} loading={verifying}>
-              Unlock
-            </Button>
+            <IconLock size={18} />
+            <Text fw={600}>Unlock {promptChar?.name}</Text>
+          </Group>
+        }
+        centered
+        styles={{ content: { ...elevatedStyle } }}
+      >
+        <Stack gap="sm">
+          <Text size="sm" c="parchment.5">This character is passphrase-protected.</Text>
+          <PasswordInput
+            placeholder="Enter passphrase"
+            value={passphrase}
+            onChange={(e) => setPassphrase(e.currentTarget.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
+            leftSection={<IconLock size={16} />}
+          />
+          <Group justify="flex-end" gap="xs">
             <Button variant="subtle" onClick={() => setPromptChar(null)}>
               Cancel
             </Button>
+            <Button onClick={handleVerify} loading={verifying}>
+              Unlock
+            </Button>
           </Group>
-        </Card>
-      )}
+        </Stack>
+      </Modal>
     </Container>
   );
 }
