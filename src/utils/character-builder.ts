@@ -32,7 +32,9 @@ export async function buildCharacter({ form, race, cls, background, subclass }: 
   const level = form.level;
   // 2024 rules: ability bonuses come from background, not race
   const abilities = finalAbilities(form.baseAbilities, form.backgroundBonuses, {});
-  const passphraseHash = await hashPassphrase(form.passphrase);
+  const passphraseHash = form.passphrase
+    ? await hashPassphrase(form.passphrase)
+    : undefined;
 
   // Combine skill proficiencies from class choices + background
   const skillProficiencies: Skill[] = [

@@ -74,9 +74,12 @@ export const wizardSchema = z.object({
   abilityMethod: z.enum(['pointBuy', 'standardArray', 'manual']),
   baseAbilities: abilityScoreSchema,
 
-  passphrase: z.string().min(4, 'Passphrase must be at least 4 characters'),
-  passphraseConfirm: z.string(),
-}).refine(d => d.passphrase === d.passphraseConfirm, {
+  passphrase: z.string().default(''),
+  passphraseConfirm: z.string().default(''),
+}).refine(d => !d.passphrase || d.passphrase.length >= 4, {
+  message: 'Passphrase must be at least 4 characters',
+  path: ['passphrase'],
+}).refine(d => !d.passphrase || d.passphrase === d.passphraseConfirm, {
   message: 'Passphrases must match',
   path: ['passphraseConfirm'],
 });

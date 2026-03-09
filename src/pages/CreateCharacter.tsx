@@ -4,7 +4,7 @@ import { useForm, FormProvider, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { notifications } from '@mantine/notifications';
-import { IconAlertCircle, IconLock } from '@tabler/icons-react';
+import { IconAlertCircle } from '@tabler/icons-react';
 import type { WizardFormData } from '@/types/wizard';
 import { wizardSchema, WIZARD_DEFAULTS, STEP_FIELDS } from '@/types/wizard';
 import { useCreateCharacter } from '@/hooks/useCreateCharacter';
@@ -50,16 +50,25 @@ export function CreateCharacter() {
     setPassphraseOpen(true);
   }
 
-  async function handleSubmit() {
+  async function handleSubmit(skipPassphrase = false) {
     const formData = getValues();
 
-    if (formData.passphrase.length < 4) {
-      setPassphraseError('Passphrase must be at least 4 characters');
-      return;
+    if (!skipPassphrase && formData.passphrase) {
+      if (formData.passphrase.length < 4) {
+        setPassphraseError('Passphrase must be at least 4 characters');
+        return;
+      }
+      if (formData.passphrase !== formData.passphraseConfirm) {
+        setPassphraseError('Passphrases must match');
+        return;
+      }
     }
-    if (formData.passphrase !== formData.passphraseConfirm) {
-      setPassphraseError('Passphrases must match');
-      return;
+
+    if (skipPassphrase) {
+      setValue('passphrase', '');
+      setValue('passphraseConfirm', '');
+      formData.passphrase = '';
+      formData.passphraseConfirm = '';
     }
 
     const valid = await trigger();
@@ -137,11 +146,7 @@ export function CreateCharacter() {
             Next
           </Button>
         ) : (
-          <Button
-            onClick={handleCreateClick}
-            color="gold"
-            leftSection={<IconLock size={16} />}
-          >
+          <Button onClick={handleCreateClick} color="gold">
             Create Character
           </Button>
         )}
@@ -159,18 +164,16 @@ export function CreateCharacter() {
       >
         <Stack gap="md">
           <Text size="sm" c="parchment.5">
-            You'll need this passphrase to load and edit your character later.
+            Set a passphrase to protect this character (optional).
           </Text>
           <PasswordInput
             label="Passphrase"
             placeholder="At least 4 characters"
-            required
             onChange={(e) => setValue('passphrase', e.currentTarget.value)}
           />
           <PasswordInput
             label="Confirm Passphrase"
             placeholder="Repeat your passphrase"
-            required
             onChange={(e) => setValue('passphraseConfirm', e.currentTarget.value)}
           />
           {passphraseError && (
@@ -179,9 +182,14 @@ export function CreateCharacter() {
           {saveError && (
             <Text size="sm" c="bloodRed">{saveError}</Text>
           )}
-          <Button onClick={handleSubmit} color="gold" loading={saving} fullWidth>
-            Create Character
-          </Button>
+          <Group grow>
+            <Button variant="default" onClick={() => handleSubmit(true)} loading={saving}>
+              Skip
+            </Button>
+            <Button onClick={() => handleSubmit(false)} color="gold" loading={saving}>
+              Create Character
+            </Button>
+          </Group>
         </Stack>
       </Modal>
     </Container>

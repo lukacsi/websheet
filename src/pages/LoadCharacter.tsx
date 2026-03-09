@@ -2,13 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container, Title, TextInput, Stack, Card, Text, Group, Badge,
-  Button, PasswordInput, Loader, Modal, Center,
+  Button, PasswordInput, Loader, Modal, Center, FileButton,
 } from '@mantine/core';
-import { IconSearch, IconLock } from '@tabler/icons-react';
+import { IconSearch, IconLock, IconUpload } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
-import pb from '@/api/pocketbase';
+import pb, { createRecord } from '@/api/pocketbase';
 import { verifyPassphrase } from '@/utils/passphrase';
+import { importCharacter } from '@/utils/character-import';
 import { cardStyle, elevatedStyle } from '@/theme/styles';
+import type { Character } from '@/types';
 
 interface CharacterSummary {
   id: string;
@@ -34,6 +36,27 @@ export function LoadCharacter() {
   const [verifying, setVerifying] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  async function handleImport(file: File | null) {
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const char = importCharacter(text);
+      const created = await createRecord<Character>('characters', char as unknown as Record<string, unknown>);
+      notifications.show({
+        title: 'Character imported',
+        message: `${char.name} has been created.`,
+        color: 'gold',
+      });
+      navigate(`/character/${created.id}`);
+    } catch (err) {
+      notifications.show({
+        title: 'Import failed',
+        message: err instanceof Error ? err.message : 'Invalid file',
+        color: 'red',
+      });
+    }
+  }
 
   // Load all characters on mount
   useEffect(() => {
@@ -99,13 +122,22 @@ export function LoadCharacter() {
     <Container size="md" py="xl">
       <Title order={2} mb="lg">Load Character</Title>
 
-      <TextInput
-        placeholder="Filter by name..."
-        leftSection={<IconSearch size={16} />}
-        value={search}
-        onChange={(e) => handleSearchChange(e.currentTarget.value)}
-        mb="lg"
-      />
+      <Group mb="lg" gap="sm">
+        <TextInput
+          placeholder="Filter by name..."
+          leftSection={<IconSearch size={16} />}
+          value={search}
+          onChange={(e) => handleSearchChange(e.currentTarget.value)}
+          style={{ flex: 1 }}
+        />
+        <FileButton onChange={handleImport} accept="application/json,.json">
+          {(props) => (
+            <Button {...props} variant="light" leftSection={<IconUpload size={16} />}>
+              Import
+            </Button>
+          )}
+        </FileButton>
+      </Group>
 
       {loading && initialLoad && (
         <Center py="xl"><Loader size="sm" /></Center>

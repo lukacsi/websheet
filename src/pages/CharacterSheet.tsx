@@ -3,8 +3,11 @@ import { useParams } from 'react-router-dom';
 import {
   Container, Text, TextInput, Group, Stack, Grid, Paper,
   LoadingOverlay, Button, Checkbox, Select, NumberInput, Tabs, ActionIcon,
+  Modal, PasswordInput,
 } from '@mantine/core';
-import { IconMoon, IconCampfire, IconPencil, IconCheck } from '@tabler/icons-react';
+import { IconMoon, IconCampfire, IconPencil, IconCheck, IconDownload } from '@tabler/icons-react';
+import { hashPassphrase } from '@/utils/passphrase';
+import { exportCharacter, downloadJson } from '@/utils/character-import';
 import { numOrDefault } from '@/utils/form-helpers';
 import { surfaceStyle } from '@/theme/styles';
 import { WikiLink } from '@/components/wiki/WikiLink';
@@ -38,6 +41,33 @@ export function CharacterSheet() {
   const { character, update, loading, dirty, savedId, save } = sheet;
   const [activeTab, setActiveTab] = useState<string | null>('combat');
   const [editIdentity, setEditIdentity] = useState(false);
+  const [passphraseOpen, setPassphraseOpen] = useState(false);
+  const [passphrase, setPassphrase] = useState('');
+  const [passphraseConfirm, setPassphraseConfirm] = useState('');
+  const [passphraseError, setPassphraseError] = useState('');
+
+  async function handleCreateWithPassphrase(skip = false) {
+    setPassphraseError('');
+    if (!skip && passphrase) {
+      if (passphrase.length < 4) {
+        setPassphraseError('Passphrase must be at least 4 characters');
+        return;
+      }
+      if (passphrase !== passphraseConfirm) {
+        setPassphraseError('Passphrases must match');
+        return;
+      }
+      const hash = await hashPassphrase(passphrase);
+      update({ passphraseHash: hash });
+      // Need a small delay so update propagates before save
+      const charWithHash = { ...character, passphraseHash: hash };
+      setPassphraseOpen(false);
+      save(charWithHash);
+    } else {
+      setPassphraseOpen(false);
+      save(character);
+    }
+  }
 
   if (loading) {
     return (
@@ -146,7 +176,36 @@ export function CharacterSheet() {
             Long Rest
           </Button>
           <div style={{ flex: 1 }} />
-          <Button size="compact-sm" variant={dirty ? 'filled' : 'light'} color={dirty ? 'gold' : undefined} onClick={() => save(character)}>
+          {savedId && (
+            <ActionIcon
+              variant="subtle"
+              size="md"
+              c="parchment.6"
+              onClick={() => {
+                const json = exportCharacter(character);
+                const safeName = character.name.replace(/[^a-zA-Z0-9-_]/g, '_') || 'character';
+                downloadJson(json, `${safeName}.json`);
+              }}
+              title="Export JSON"
+            >
+              <IconDownload size={16} />
+            </ActionIcon>
+          )}
+          <Button
+            size="compact-sm"
+            variant={dirty ? 'filled' : 'light'}
+            color={dirty ? 'gold' : undefined}
+            onClick={() => {
+              if (!savedId) {
+                setPassphrase('');
+                setPassphraseConfirm('');
+                setPassphraseError('');
+                setPassphraseOpen(true);
+              } else {
+                save(character);
+              }
+            }}
+          >
             {savedId ? 'Save' : 'Create'}
           </Button>
         </Group>
@@ -415,6 +474,46 @@ export function CharacterSheet() {
         </div>
       </div>
 
+      {/* Passphrase modal for new sheets */}
+      <Modal
+        opened={passphraseOpen}
+        onClose={() => setPassphraseOpen(false)}
+        title="Set a Passphrase"
+        centered
+        styles={{
+          content: { backgroundColor: 'var(--mantine-color-dark-7)' },
+          header: { backgroundColor: 'var(--mantine-color-dark-7)' },
+        }}
+      >
+        <Stack gap="md">
+          <Text size="sm" c="parchment.5">
+            Set a passphrase to protect this character (optional).
+          </Text>
+          <PasswordInput
+            label="Passphrase"
+            placeholder="At least 4 characters"
+            value={passphrase}
+            onChange={(e) => setPassphrase(e.currentTarget.value)}
+          />
+          <PasswordInput
+            label="Confirm Passphrase"
+            placeholder="Repeat your passphrase"
+            value={passphraseConfirm}
+            onChange={(e) => setPassphraseConfirm(e.currentTarget.value)}
+          />
+          {passphraseError && (
+            <Text size="sm" c="bloodRed">{passphraseError}</Text>
+          )}
+          <Group grow>
+            <Button variant="default" onClick={() => handleCreateWithPassphrase(true)}>
+              Skip
+            </Button>
+            <Button color="gold" onClick={() => handleCreateWithPassphrase(false)}>
+              Create
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
     </Container>
   );
 }

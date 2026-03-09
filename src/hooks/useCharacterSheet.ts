@@ -10,6 +10,7 @@ import { useClasses, useSubclasses } from '@/hooks/useClasses';
 import { useRaces } from '@/hooks/useRaces';
 import { useBackgrounds } from '@/hooks/useBackgrounds';
 import { getSubclass } from '@/api/classes';
+import { addRecentCharacter } from '@/utils/recent-characters';
 
 const DEFAULT_CHARACTER: Character = {
   name: '',
@@ -116,8 +117,18 @@ export function useCharacterSheet(id: string | undefined) {
           const clean = Object.fromEntries(
             Object.entries(c).filter(([, v]) => v != null),
           );
-          setCharacter({ ...DEFAULT_CHARACTER, ...clean });
+          const merged = { ...DEFAULT_CHARACTER, ...clean };
+          setCharacter(merged);
           setSavedId(c.id);
+          if (c.id) {
+            addRecentCharacter({
+              id: c.id,
+              name: merged.name,
+              raceName: merged.raceName,
+              classes: (merged.classes ?? []).map((cl: { className: string; level: number }) => ({ className: cl.className, level: cl.level })),
+              level: merged.level,
+            });
+          }
         }
       })
       .catch(() => {
@@ -138,14 +149,25 @@ export function useCharacterSheet(id: string | undefined) {
   // Debounced auto-save
   const save = useCallback(async (char: Character) => {
     try {
+      let charId = savedId;
       if (savedId) {
         await updateRecord('characters', savedId, char as unknown as Record<string, unknown>);
       } else {
         const created = await createRecord<Character>('characters', char as unknown as Record<string, unknown>);
+        charId = created.id;
         setSavedId(created.id);
         navigate(`/character/${created.id}`, { replace: true });
       }
       setDirty(false);
+      if (charId) {
+        addRecentCharacter({
+          id: charId,
+          name: char.name,
+          raceName: char.raceName,
+          classes: char.classes.map((c) => ({ className: c.className, level: c.level })),
+          level: char.level,
+        });
+      }
     } catch (err) {
       notifications.show({
         title: 'Save failed',

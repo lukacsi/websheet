@@ -1,31 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Container, Title, Text, SimpleGrid, Card, Button, Stack, Group, Badge, List, ThemeIcon } from '@mantine/core';
 import { IconWand, IconFileText, IconSearch } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
-import pb from '@/api/pocketbase';
 import { cardStyle, elevatedStyle, glowAccent } from '@/theme/styles';
-
-interface RecentCharacter {
-  id: string;
-  name: string;
-  raceName: string;
-  classes: { className: string; level: number }[];
-  level: number;
-}
+import { getRecentCharacters, type RecentEntry } from '@/utils/recent-characters';
 
 export function Home() {
-  const [recent, setRecent] = useState<RecentCharacter[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const [recent] = useState<RecentEntry[]>(() => getRecentCharacters());
+  const loaded = true;
 
-  useEffect(() => {
-    let cancelled = false;
-    pb.collection('characters').getList(1, 8, { sort: '-updated' })
-      .then((res) => { if (!cancelled) { setRecent(res.items as unknown as RecentCharacter[]); setLoaded(true); } })
-      .catch(() => { if (!cancelled) setLoaded(true); });
-    return () => { cancelled = true; };
-  }, []);
-
-  const classLabel = (char: RecentCharacter) =>
+  const classLabel = (char: RecentEntry) =>
     char.classes?.map((c) => `${c.className} ${c.level}`).join(' / ') || `Lv ${char.level}`;
 
   return (
