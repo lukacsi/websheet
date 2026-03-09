@@ -119,7 +119,7 @@ export function WikiLink({ tagType, name, source, displayText }: WikiLinkProps) 
           <Anchor
             component="span"
             size="sm"
-            c={TAG_COLORS[tagType] ?? 'dimmed'}
+            c={TAG_COLORS[tagType] ?? 'parchment.5'}
             td="underline dotted"
           >
             {displayText || name}

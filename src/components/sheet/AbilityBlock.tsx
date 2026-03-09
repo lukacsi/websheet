@@ -8,12 +8,12 @@ import { elevatedStyle } from '@/theme/styles';
 const ABILITIES: AbilityKey[] = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
 
 const ABILITY_COLORS: Record<AbilityKey, string> = {
-  str: 'var(--mantine-color-inkBrown-8)',
-  dex: 'var(--mantine-color-teal-8)',
-  con: 'var(--mantine-color-inkBrown-8)',
-  int: 'var(--mantine-color-blue-8)',
-  wis: 'var(--mantine-color-violet-8)',
-  cha: 'var(--mantine-color-gold-8)',
+  str: 'var(--mantine-color-bloodRed-6)',
+  dex: 'var(--mantine-color-gold-6)',
+  con: 'var(--mantine-color-inkBrown-6)',
+  int: 'var(--mantine-color-parchment-6)',
+  wis: 'var(--mantine-color-gold-8)',
+  cha: 'var(--mantine-color-bloodRed-8)',
 };
 
 interface Props {
@@ -52,7 +52,7 @@ export function AbilityBlock({
             <Text size="xs" tt="uppercase" fw={700} c="parchment.3" mb={2}>
               {ABILITY_NAMES[key].slice(0, 3)}
             </Text>
-            <Text fw={800} size="xl" c={mod >= 0 ? 'parchment.2' : 'red.4'} lh={1.1}>
+            <Text fw={800} size="xl" c={mod >= 0 ? 'parchment.2' : 'bloodRed.4'} lh={1.1}>
               {formatModifier(mod)}
             </Text>
             <NumberInput
