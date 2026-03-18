@@ -1,0 +1,12 @@
+{
+  "prefix": "WS",
+  "next_number": 12,
+  "phases": [
+    "Phase A: Fix Data & Choices",
+    "Phase B: Derived Stats Pipeline",
+    "Phase C: Finalize Design",
+    "Phase D: DM Support",
+    "Phase E: Combat & Level Testing"
+  ],
+  "checkpoints": []
+}
