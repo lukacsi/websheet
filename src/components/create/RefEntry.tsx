@@ -22,6 +22,7 @@ interface RefEntryProps {
  */
 function parseRefKey(refType: string, refKey: string): { tagType: EntityTagType; name: string; source?: string; filter?: string } {
   const parts = refKey.split('|');
+  const esc = (s: string) => s.replace(/"/g, '\\"');
 
   switch (refType) {
     case 'refOptionalfeature':
@@ -34,7 +35,7 @@ function parseRefKey(refType: string, refKey: string): { tagType: EntityTagType;
         tagType: 'classFeature',
         name: parts[0],
         source: parts[4] || parts[2] || undefined,
-        filter: parts[1] ? `className="${parts[1]}"` : undefined,
+        filter: parts[1] ? `className="${esc(parts[1])}"` : undefined,
       };
     case 'refSubclassFeature':
       // name|className|classSource|subclassName|subclassSource|level|featureSource
@@ -42,7 +43,7 @@ function parseRefKey(refType: string, refKey: string): { tagType: EntityTagType;
         tagType: 'subclassFeature',
         name: parts[0],
         source: parts[6] || parts[4] || undefined,
-        filter: parts[3] ? `subclassName="${parts[3]}"` : undefined,
+        filter: parts[3] ? `subclassName="${esc(parts[3])}"` : undefined,
       };
     default:
       return { tagType: 'optfeature', name: parts[0] };

@@ -62,7 +62,7 @@ export async function buildCharacter({ form, race, cls, background, subclass }: 
       classId: cls.id,
       className: cls.name,
       subclassId: subclass?.id,
-      subclassName: subclass?.name,
+      subclassName: subclass?.shortName,
       level,
     }],
 
