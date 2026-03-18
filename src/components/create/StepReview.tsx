@@ -23,7 +23,7 @@ export function StepReview() {
   const hp = cls ? calculateHp(cls.hitDie, abilities.con) : 0;
   const ac = calculateAc(abilities.dex);
   const initiative = calculateInitiative(abilities.dex);
-  const profBonus = proficiencyBonus(1);
+  const profBonus = proficiencyBonus(form.level);
 
   return (
     <Stack gap="md">
@@ -47,7 +47,7 @@ export function StepReview() {
       <Group gap="lg">
         <Stack gap={2}>
           <Text size="xs" c="parchment.5">Class</Text>
-          <Text fw={500}>{cls?.name ?? '\u2014'} (Level 1)</Text>
+          <Text fw={500}>{cls?.name ?? '\u2014'} (Level {form.level})</Text>
         </Stack>
         <Stack gap={2}>
           <Text size="xs" c="parchment.5">Background</Text>
