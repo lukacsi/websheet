@@ -1,5 +1,33 @@
 # Notes — WebSheet
 
+## 2026-03-09 — UX Review Round 2 (Functional Testing, ALL 13 Classes)
+
+**Context:** Professional UX/UI review of WebSheet post-redesign. 13 rounds of testing covering all D&D 5e classes. Goal: find all functional gaps, edge cases, and automation opportunities.
+
+**Analysis:**
+25 functional gaps found (G1-G25) across 3 layers:
+1. **Data persistence** — attacks lost on save (G8, confirmed 11/11 classes). Resources, spells, items persist fine.
+2. **Data→Stats pipeline missing** — app stores correct data but doesn't derive stats: equipped armor doesn't affect AC (G19), class features don't modify saves/speed/AC (G6/G7/G20), attack bonus not computed (G23), resources not auto-created (G11), subclass features not loaded for 8/12 subclasses (G5).
+3. **Wizard multi-level choices** — wizard handles Lv1 choices but ignores ASIs (G3), invocations (G16), fighting style (G24), pact boon (G18), oath spells (G22), equipment (G4).
+
+Key discoveries:
+- G1 (review wrong level): **13/13 classes** — universal bug, always shows Level 1
+- G8 (attacks lost): **11/11 tested** — universal, resources always persist (different save paths)
+- G5 (subclass features): 4/12 work (Evoker, Thief, Champion, Gloom Stalker), 8/12 fail. Root cause: PocketBase query failures for certain feature names (console errors on "Disciple of Life", "Circle Forms")
+- Standard spell slots DO auto-populate correctly for all casters
+- HP auto-calculation correct across all 13 classes
+- Search ranking alphabetical not relevance — affects both spells AND items (G14)
+
+**Decisions:**
+- Automation should use "defaults with overrides" pattern — auto-compute AC/saves/attack bonus but let player edit
+- "auto: +5" pattern (already used for Prof Bonus) is the right model for all derived stats
+- Priority: fix persistence (G8) > fix review level (G1) > load subclass features (G5) > connect armor to AC (G19)
+
+**Done:**
+- `review/UX-REVIEW-2.md` — comprehensive review doc (~870 lines), 25 gaps, 13 rounds, final gap analysis
+- 12 test characters created covering all classes (Monk, Warlock, Paladin, Wizard, Rogue, Druid, Fighter, Barbarian, Ranger, Bard, Cleric, Sorcerer)
+- 60+ screenshots documenting all findings
+
 ## 2026-03-09 — Character Management Improvements + Review
 
 **Context:** Four quality-of-life improvements needed: optional passphrase in wizard, passphrase for blank sheets, export/import JSON, localStorage-based recent characters (PB sort was broken). After implementation, thorough browser review uncovered additional bugs.

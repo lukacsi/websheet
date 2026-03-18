@@ -136,6 +136,16 @@ export interface Character {
   // Attacks
   attacks: CharacterAttack[];
 
+  // Action economy (per-turn tracking)
+  actionUsed: boolean;
+  bonusActionUsed: boolean;
+  reactionUsed: boolean;
+  movementUsed: number;
+
+  // Combat quick-reference pins (feature/spell IDs the player wants on combat tab)
+  pinnedCombatFeatures: string[];
+  pinnedCombatSpells: string[];
+
   // Features & resources
   featureIds: string[];
   featureChoices: Record<string, string[]>;

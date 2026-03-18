@@ -34,6 +34,9 @@ import { AppearanceSection } from '@/components/sheet/AppearanceSection';
 import { BackstorySection } from '@/components/sheet/BackstorySection';
 import { SectionTitle } from '@/components/sheet/SectionTitle';
 import { QuickReference } from '@/components/sheet/QuickReference';
+import { ActionEconomySection } from '@/components/sheet/ActionEconomySection';
+import { StandardActionsSection } from '@/components/sheet/StandardActionsSection';
+import { CombatFeaturesSection } from '@/components/sheet/CombatFeaturesSection';
 
 export function CharacterSheet() {
   const { id } = useParams<{ id: string }>();
@@ -277,6 +280,14 @@ export function CharacterSheet() {
 
           <Tabs.Panel value="combat">
             <Stack gap="md">
+              <ActionEconomySection
+                actionUsed={character.actionUsed ?? false}
+                bonusActionUsed={character.bonusActionUsed ?? false}
+                reactionUsed={character.reactionUsed ?? false}
+                movementUsed={character.movementUsed ?? 0}
+                speed={typeof character.speed === 'object' ? String(character.speed.walk ?? 30) : String(character.speed ?? 30)}
+                onChange={(field, value) => update({ [field]: value })}
+              />
               <div>
                 <SectionTitle>Attacks &amp; Spellcasting</SectionTitle>
                 <AttacksSection
@@ -287,6 +298,17 @@ export function CharacterSheet() {
                   onChange={(attacks) => update({ attacks })}
                 />
               </div>
+              <CombatFeaturesSection
+                classes={character.classes ?? []}
+                level={character.level}
+                spells={character.spells ?? []}
+                pinnedFeatures={character.pinnedCombatFeatures ?? []}
+                pinnedSpells={character.pinnedCombatSpells ?? []}
+                onPinFeature={(id) => update({ pinnedCombatFeatures: [...(character.pinnedCombatFeatures ?? []), id] })}
+                onUnpinFeature={(id) => update({ pinnedCombatFeatures: (character.pinnedCombatFeatures ?? []).filter((f) => f !== id) })}
+                onPinSpell={(id) => update({ pinnedCombatSpells: [...(character.pinnedCombatSpells ?? []), id] })}
+                onUnpinSpell={(id) => update({ pinnedCombatSpells: (character.pinnedCombatSpells ?? []).filter((s) => s !== id) })}
+              />
               <div>
                 <SectionTitle>Resources</SectionTitle>
                 <ResourcesSection
@@ -294,6 +316,7 @@ export function CharacterSheet() {
                   onChange={(resources) => update({ resources })}
                 />
               </div>
+              <StandardActionsSection />
             </Stack>
           </Tabs.Panel>
 

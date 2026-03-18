@@ -109,6 +109,12 @@ export async function buildCharacter({ form, race, cls, background, subclass }: 
     attunementSlots: 3,
 
     attacks: [],
+    actionUsed: false,
+    bonusActionUsed: false,
+    reactionUsed: false,
+    movementUsed: 0,
+    pinnedCombatFeatures: [],
+    pinnedCombatSpells: [],
     featureIds: [],
     featureChoices: form.featureChoices ?? {},
     resources: [],
