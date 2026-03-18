@@ -23,6 +23,7 @@ export async function getSubclass(id: string): Promise<SubclassRecord> {
 }
 
 export async function getSubclasses(className: string, classSource: string): Promise<SubclassRecord[]> {
-  const filter = `className="${className}" && classSource="${classSource}"`;
+  const esc = (s: string) => s.replace(/"/g, '\\"');
+  const filter = `className="${esc(className)}" && classSource="${esc(classSource)}"`;
   return fetchAll<SubclassRecord>('subclasses', filter, 'name');
 }
