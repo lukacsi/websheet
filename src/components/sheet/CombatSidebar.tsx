@@ -16,6 +16,7 @@ interface Props {
   character: Character;
   calculatedInitiative: number;
   calculatedProfBonus: number;
+  calculatedAc: number;
   onChange: (partial: Partial<Character>) => void;
 }
 
@@ -39,7 +40,7 @@ function StatBox({ label, children, extraStyle, labelColor }: {
   );
 }
 
-export function CombatSidebar({ character, calculatedInitiative, calculatedProfBonus, onChange }: Props) {
+export function CombatSidebar({ character, calculatedInitiative, calculatedProfBonus, calculatedAc, onChange }: Props) {
   const hpPct = character.maxHp > 0
     ? Math.min(100, Math.max(0, (character.hp / character.maxHp) * 100))
     : 100;
@@ -128,6 +129,7 @@ export function CombatSidebar({ character, calculatedInitiative, calculatedProfB
             size="xs"
             styles={centeredLargeInputStyles}
           />
+          <Text size="xs" c="parchment.6">auto: {calculatedAc}</Text>
         </StatBox>
         <StatBox label="Speed">
           <NumberInput
