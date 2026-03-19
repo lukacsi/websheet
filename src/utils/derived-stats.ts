@@ -1,5 +1,6 @@
 import type { AbilityKey, AbilityScores } from '@/types';
 import type { Skill } from '@/types';
+import type { CharacterItem } from '@/types/character';
 import { abilityModifier, SKILL_ABILITY } from '@/types';
 
 /** Calculate final ability scores = base + bonuses (from background in 2024 rules) */
@@ -35,9 +36,67 @@ export function calculateHp(hitDie: number, conScore: number): number {
   return Math.max(1, hitDie + abilityModifier(conScore));
 }
 
-/** AC = 10 + DEX modifier (unarmored) */
+/** AC = 10 + DEX modifier (unarmored, no armor data) */
 export function calculateAc(dexScore: number): number {
   return 10 + abilityModifier(dexScore);
+}
+
+/** Item shape needed for AC calculation (subset of full PB item) */
+interface ArmorItemData {
+  ac?: number;
+  type?: string; // 'LA' | 'MA' | 'HA' | 'S'
+}
+
+/**
+ * Calculate AC from equipped items + abilities + class.
+ * Returns the suggested AC value. Respects armor type rules:
+ * - No armor: 10 + DEX (or Unarmored Defense for Barbarian/Monk)
+ * - Light (LA): armor AC + DEX
+ * - Medium (MA): armor AC + min(DEX, 2)
+ * - Heavy (HA): armor AC (no DEX)
+ * - Shield (S): +2 to any of the above
+ */
+export function calculateArmoredAc(
+  equippedItems: Array<CharacterItem & { itemData?: ArmorItemData }>,
+  abilities: AbilityScores,
+  className?: string,
+): number {
+  const dexMod = abilityModifier(abilities.dex);
+
+  // Find equipped armor and shield
+  const armor = equippedItems.find(
+    (i) => i.equipped && i.itemData?.type && ['LA', 'MA', 'HA'].includes(i.itemData.type)
+  );
+  const shield = equippedItems.find(
+    (i) => i.equipped && i.itemData?.type === 'S'
+  );
+  const shieldBonus = shield ? 2 : 0;
+
+  let baseAc: number;
+
+  if (armor?.itemData?.ac) {
+    const armorType = armor.itemData.type;
+    if (armorType === 'HA') {
+      baseAc = armor.itemData.ac;
+    } else if (armorType === 'MA') {
+      baseAc = armor.itemData.ac + Math.min(dexMod, 2);
+    } else {
+      // Light armor
+      baseAc = armor.itemData.ac + dexMod;
+    }
+  } else {
+    // Unarmored — check for class-specific unarmored defense
+    const cn = (className ?? '').toLowerCase();
+    if (cn === 'barbarian') {
+      baseAc = 10 + dexMod + abilityModifier(abilities.con);
+    } else if (cn === 'monk') {
+      baseAc = 10 + dexMod + abilityModifier(abilities.wis);
+    } else {
+      baseAc = 10 + dexMod;
+    }
+  }
+
+  return baseAc + shieldBonus;
 }
 
 /** Initiative = DEX modifier */

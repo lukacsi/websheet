@@ -244,6 +244,7 @@ export function CharacterSheet() {
             character={character}
             calculatedInitiative={sheet.calcInitiative}
             calculatedProfBonus={sheet.calcProfBonusVal}
+            calculatedAc={sheet.calcAc}
             onChange={update}
           />
 

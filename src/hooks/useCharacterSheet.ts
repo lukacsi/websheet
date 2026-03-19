@@ -1,14 +1,15 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { notifications } from '@mantine/notifications';
 import { fetchOne, createRecord, updateRecord } from '@/api/pocketbase';
 import { lookupEntity } from '@/api/wiki';
 import type { Character, CharacterFeat, Skill } from '@/types';
 import { abilityModifier } from '@/types';
-import { proficiencyBonus as calcProfBonus } from '@/utils/derived-stats';
+import { proficiencyBonus as calcProfBonus, calculateArmoredAc } from '@/utils/derived-stats';
 import { useClasses, useSubclasses } from '@/hooks/useClasses';
 import { useRaces } from '@/hooks/useRaces';
 import { useBackgrounds } from '@/hooks/useBackgrounds';
+import { useItems } from '@/hooks/useItems';
 import { getSubclass } from '@/api/classes';
 import { addRecentCharacter } from '@/utils/recent-characters';
 
@@ -413,6 +414,22 @@ export function useCharacterSheet(id: string | undefined) {
   const calcInitiative = abilityModifier(character.abilities.dex);
   const calcProfBonusVal = calcProfBonus(character.level);
 
+  // AC calculation from equipped items
+  const { items: allItems } = useItems();
+  const calcAc = useMemo(() => {
+    const equippedWithData = character.items
+      .filter((i) => i.equipped)
+      .map((i) => {
+        const itemData = allItems.find((d) => d.id === i.itemId);
+        return {
+          ...i,
+          itemData: itemData ? { ac: itemData.ac, type: itemData.type } : undefined,
+        };
+      });
+    const className = character.classes?.[0]?.className || currentClass?.name;
+    return calculateArmoredAc(equippedWithData, character.abilities, className);
+  }, [character.items, character.abilities, character.classes, allItems, currentClass]);
+
   return {
     character,
     update,
@@ -433,5 +450,6 @@ export function useCharacterSheet(id: string | undefined) {
     longRest,
     calcInitiative,
     calcProfBonusVal,
+    calcAc,
   };
 }
