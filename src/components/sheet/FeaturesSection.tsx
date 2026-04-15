@@ -1,5 +1,5 @@
 import { useMemo, useEffect, useState } from 'react';
-import { Stack, Text, Loader, TextInput } from '@mantine/core';
+import { Stack, Text, Loader, TextInput, Divider } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 import type { CharacterClass, CharacterFeat, Entry } from '@/types';
 import { fetchOne } from '@/api/pocketbase';
@@ -172,17 +172,28 @@ export function FeaturesSection({
       )}
 
       {bgFeature && showBg && bgFeature.featureName && (
-        <BackgroundFeatureAccordion bgFeature={bgFeature} />
+        <>
+          {raceTraits && showRace && <Divider color="parchment.8" />}
+          <BackgroundFeatureAccordion bgFeature={bgFeature} />
+        </>
       )}
 
       {filteredFeatures.length > 0 && (
-        <ClassFeaturesAccordion
-          features={filteredFeatures}
-          featureChoices={featureChoices}
-          onFeatureChoicesChange={onFeatureChoicesChange}
-        />
+        <>
+          {((raceTraits && showRace) || (bgFeature && showBg && bgFeature.featureName)) && (
+            <Divider label="Class Features" labelPosition="left" color="parchment.8" styles={{ label: { color: 'var(--mantine-color-parchment-6)', fontSize: 11 } }} />
+          )}
+          <ClassFeaturesAccordion
+            features={filteredFeatures}
+            featureChoices={featureChoices}
+            onFeatureChoicesChange={onFeatureChoicesChange}
+          />
+        </>
       )}
 
+      {((raceTraits && showRace) || (bgFeature && showBg) || filteredFeatures.length > 0) && (
+        <Divider label="Feats" labelPosition="left" color="parchment.8" styles={{ label: { color: 'var(--mantine-color-parchment-6)', fontSize: 11 } }} />
+      )}
       <FeatListAccordion
         feats={q ? feats.filter((f) => f.name.toLowerCase().includes(q)) : feats}
         onFeatsChange={onFeatsChange}

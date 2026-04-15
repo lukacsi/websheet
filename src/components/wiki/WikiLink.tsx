@@ -50,6 +50,7 @@ interface WikiLinkProps {
   name: string;
   source?: string;
   displayText?: string;
+  size?: string;
 }
 
 /** Simple hover preview — fetches on first hover, cached after */
@@ -90,7 +91,7 @@ function HoverPreview({ tagType, name, source }: { tagType: EntityTagType; name:
   );
 }
 
-export function WikiLink({ tagType, name, source, displayText }: WikiLinkProps) {
+export function WikiLink({ tagType, name, source, displayText, size = 'sm' }: WikiLinkProps) {
   const { open } = useWikiDrawer();
 
   function handleClick(e: React.MouseEvent) {
@@ -118,7 +119,7 @@ export function WikiLink({ tagType, name, source, displayText }: WikiLinkProps) 
         <HoverCard.Target>
           <Anchor
             component="span"
-            size="sm"
+            size={size}
             c={TAG_COLORS[tagType] ?? 'parchment.5'}
             td="underline dotted"
           >

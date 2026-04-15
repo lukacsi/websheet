@@ -37,7 +37,7 @@ export function SpellcastingSection({
   const used = [...(spellSlots.used || []), ...Array(9).fill(0)].slice(0, 9);
 
   // Only show columns up to the highest non-zero max slot (minimum 3)
-  const highestSlotLevel = Math.max(3, max.findLastIndex((m) => m > 0) + 1);
+  const highestSlotLevel = Math.max(3, max.findLastIndex((m: number) => m > 0) + 1);
 
   function setMax(idx: number, val: number) {
     const next = [...max];

@@ -117,6 +117,7 @@ export async function buildCharacter({ form, race, cls, background, subclass }: 
     pinnedCombatSpells: [],
     featureIds: [],
     featureChoices: form.featureChoices ?? {},
+    feats: [],
     resources: [],
 
     personalityTraits: '',

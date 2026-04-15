@@ -137,17 +137,42 @@ function SpellCluster({
   );
 }
 
-function ResourceCluster({ resources, onTabChange }: { resources: TrackedResource[]; onTabChange: (t: string) => void }) {
+function ResourceCluster({
+  resources,
+  onResourcesChange,
+  onTabChange,
+}: {
+  resources: TrackedResource[];
+  onResourcesChange: (resources: TrackedResource[]) => void;
+  onTabChange: (t: string) => void;
+}) {
   const shown = resources.slice(0, 3);
   const extra = resources.length - shown.length;
+
+  const useResource = (name: string) => {
+    const updated = resources.map((r) =>
+      r.name === name && r.used < r.max ? { ...r, used: r.used + 1 } : r,
+    );
+    onResourcesChange(updated);
+  };
+
   return (
-    <Group gap={8} style={{ cursor: 'pointer' }} onClick={() => onTabChange('combat')} wrap="wrap">
-      {shown.map((r) => (
-        <Text key={r.name} size="xs" c="parchment.2">
-          {r.name} <Text span c="parchment.5">{r.max - r.used}/{r.max}</Text>
-        </Text>
-      ))}
-      {extra > 0 && <Text size="xs" c="parchment.6">+{extra} more</Text>}
+    <Group gap={8} wrap="wrap">
+      {shown.map((r) => {
+        const remaining = r.max - r.used;
+        return (
+          <Text
+            key={r.name}
+            size="xs"
+            c="parchment.2"
+            style={{ cursor: remaining > 0 ? 'pointer' : 'default' }}
+            onClick={() => remaining > 0 ? useResource(r.name) : onTabChange('combat')}
+          >
+            {r.name} <Text span c={remaining > 0 ? 'parchment.5' : 'bloodRed.5'}>{remaining}/{r.max}</Text>
+          </Text>
+        );
+      })}
+      {extra > 0 && <Text size="xs" c="parchment.6" style={{ cursor: 'pointer' }} onClick={() => onTabChange('combat')}>+{extra} more</Text>}
     </Group>
   );
 }
@@ -160,7 +185,7 @@ export function QuickReference({
   spellSlots,
   resources,
   onSlotsChange,
-  onResourcesChange: _onResourcesChange,
+  onResourcesChange,
   onTabChange,
 }: QuickReferenceProps) {
   const best = bestAttack(attacks);
@@ -190,7 +215,7 @@ export function QuickReference({
   }
 
   if (hasResources) {
-    clusters.push(<ResourceCluster key="res" resources={resources} onTabChange={onTabChange} />);
+    clusters.push(<ResourceCluster key="res" resources={resources} onResourcesChange={onResourcesChange} onTabChange={onTabChange} />);
   }
 
   return (

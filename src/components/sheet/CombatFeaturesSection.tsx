@@ -6,7 +6,7 @@ import { SectionTitle } from './SectionTitle';
 import { fetchClassFeatures, fetchSubclassFeatures } from '@/api/wiki';
 import { fetchOne, fetchAll } from '@/api/pocketbase';
 import { extractEntryText } from '@/utils/features';
-import type { CharacterClass, CharacterSpell, Entry } from '@/types';
+import type { CharacterClass, CharacterSpell, CharacterFeat, Entry } from '@/types';
 import type { ClassFeatureRecord } from './features/types';
 import { stripTags } from '@/utils/strip-tags';
 
@@ -29,6 +29,9 @@ interface Props {
   classes: CharacterClass[];
   level: number;
   spells: CharacterSpell[];
+  feats: CharacterFeat[];
+  raceId: string;
+  backgroundId: string;
   pinnedFeatures: string[];
   pinnedSpells: string[];
   onPinFeature: (id: string) => void;
@@ -49,6 +52,9 @@ export function CombatFeaturesSection({
   classes,
   level,
   spells,
+  feats,
+  raceId,
+  backgroundId,
   pinnedFeatures,
   pinnedSpells,
   onPinFeature,
@@ -56,14 +62,15 @@ export function CombatFeaturesSection({
   onPinSpell,
   onUnpinSpell,
 }: Props) {
-  const [allFeatures, setAllFeatures] = useState<FeatureRef[]>([]);
+  const [classFeatureRefs, setClassFeatureRefs] = useState<FeatureRef[]>([]);
+  const [extraFeatureRefs, setExtraFeatureRefs] = useState<FeatureRef[]>([]);
   const [allSpellRefs, setAllSpellRefs] = useState<SpellRef[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Fetch class features from PB
   useEffect(() => {
     const cls = classes[0];
-    if (!cls?.classId) { setAllFeatures([]); return; }
+    if (!cls?.classId) { setClassFeatureRefs([]); return; }
 
     let cancelled = false;
     setLoading(true);
@@ -91,14 +98,114 @@ export function CombatFeaturesSection({
               className: classData.name,
               source: classData.source,
             }));
-          setAllFeatures(refs);
+          setClassFeatureRefs(refs);
         }
       })
-      .catch(() => { if (!cancelled) setAllFeatures([]); })
+      .catch(() => { if (!cancelled) setClassFeatureRefs([]); })
       .finally(() => { if (!cancelled) setLoading(false); });
 
     return () => { cancelled = true; };
   }, [classes, level]);
+
+  // Build refs for feats, race traits, background feature
+  useEffect(() => {
+    let cancelled = false;
+    const refs: FeatureRef[] = [];
+
+    // Fetch race traits, background feature, and feat descriptions
+    const promises: Promise<void>[] = [];
+
+    // Feats — fetch descriptions for official feats from PB
+    const officialFeatIds = feats.filter((f) => f.featId).map((f) => f.featId);
+    if (officialFeatIds.length > 0) {
+      const filter = officialFeatIds.map((id) => `id='${id}'`).join(' || ');
+      promises.push(
+        fetchAll<{ id: string; name: string; entries: Entry[] }>('feats', filter)
+          .then((items) => {
+            if (cancelled) return;
+            const descMap = new Map(items.map((item) => [item.id, stripTags(extractEntryText(item.entries ?? []))]));
+            for (const f of feats) {
+              if (!f.featId) continue;
+              refs.push({
+                id: `feat::${f.featId}`,
+                name: f.name,
+                description: descMap.get(f.featId) ?? '',
+                level: 0,
+                className: '',
+                source: 'feat',
+              });
+            }
+          })
+          .catch(() => {
+            // Fallback: add feats without descriptions
+            for (const f of feats) {
+              if (!f.featId) continue;
+              refs.push({ id: `feat::${f.featId}`, name: f.name, description: '', level: 0, className: '', source: 'feat' });
+            }
+          }),
+      );
+    }
+
+    // Homebrew feats (no PB lookup needed)
+    for (const f of feats) {
+      if (f.featId) continue;
+      refs.push({
+        id: `feat::custom::${f.name}`,
+        name: f.name,
+        description: f.description ?? '',
+        level: 0,
+        className: '',
+        source: 'feat',
+      });
+    }
+
+    if (raceId) {
+      promises.push(
+        fetchOne<{ name: string; traits: Entry[] }>('races', raceId)
+          .then((data) => {
+            if (cancelled || !data.traits?.length) return;
+            data.traits.forEach((trait, i) => {
+              const traitName = typeof trait === 'string' ? '' : (trait as { name?: string }).name ?? '';
+              const traitText = typeof trait === 'string' ? trait : stripTags(extractEntryText([trait]));
+              if (!traitName) return;
+              refs.push({
+                id: `race::${i}`,
+                name: traitName,
+                description: traitText,
+                level: 0,
+                className: '',
+                source: 'race',
+              });
+            });
+          })
+          .catch(() => {}),
+      );
+    }
+
+    if (backgroundId) {
+      promises.push(
+        fetchOne<{ name: string; feature: { name: string; entries: Entry[] } }>('backgrounds', backgroundId)
+          .then((data) => {
+            if (cancelled || !data.feature?.name) return;
+            refs.push({
+              id: 'bg::feature',
+              name: data.feature.name,
+              description: stripTags(extractEntryText(data.feature.entries ?? [])),
+              level: 0,
+              className: '',
+              source: 'background',
+            });
+          })
+          .catch(() => {}),
+      );
+    }
+
+    Promise.all(promises).then(() => {
+      if (!cancelled) setExtraFeatureRefs(refs);
+    });
+
+    return () => { cancelled = true; };
+  }, [feats, raceId, backgroundId]);
 
   // Fetch spell casting times from PB
   useEffect(() => {
@@ -110,7 +217,7 @@ export function CombatFeaturesSection({
 
     const filter = ids.map((id) => `id='${id}'`).join(' || ');
     fetchAll<{ id: string; name: string; time: Array<{ number: number; unit: string }> }>(
-      'spells', { filter }
+      'spells', filter
     )
       .then((items) => {
         if (cancelled) return;
@@ -127,6 +234,11 @@ export function CombatFeaturesSection({
     return () => { cancelled = true; };
   }, [spells]);
 
+  const allFeatures = useMemo(
+    () => [...classFeatureRefs, ...extraFeatureRefs],
+    [classFeatureRefs, extraFeatureRefs],
+  );
+
   const pinnedFeatureItems = useMemo(
     () => allFeatures.filter((f) => pinnedFeatures.includes(f.id)),
     [allFeatures, pinnedFeatures]
@@ -137,8 +249,8 @@ export function CombatFeaturesSection({
   );
 
   const suggestedFeatures = useMemo(
-    () => allFeatures.filter((f) => !pinnedFeatures.includes(f.id) && isCombatRelevant(f.name, f.description)),
-    [allFeatures, pinnedFeatures]
+    () => classFeatureRefs.filter((f) => !pinnedFeatures.includes(f.id) && isCombatRelevant(f.name, f.description)),
+    [classFeatureRefs, pinnedFeatures]
   );
   const suggestedSpells = useMemo(
     () => allSpellRefs.filter((s) => !pinnedSpells.includes(s.id) && (s.castingTime.includes('bonus') || s.castingTime.includes('reaction'))),
@@ -146,9 +258,17 @@ export function CombatFeaturesSection({
   );
 
   const otherFeatures = useMemo(
-    () => allFeatures.filter((f) => !pinnedFeatures.includes(f.id) && !isCombatRelevant(f.name, f.description)),
-    [allFeatures, pinnedFeatures]
+    () => classFeatureRefs.filter((f) => !pinnedFeatures.includes(f.id) && !isCombatRelevant(f.name, f.description)),
+    [classFeatureRefs, pinnedFeatures]
   );
+
+  const unpinnedExtras = useMemo(
+    () => extraFeatureRefs.filter((f) => !pinnedFeatures.includes(f.id)),
+    [extraFeatureRefs, pinnedFeatures],
+  );
+  const unpinnedFeats = useMemo(() => unpinnedExtras.filter((f) => f.source === 'feat'), [unpinnedExtras]);
+  const unpinnedRace = useMemo(() => unpinnedExtras.filter((f) => f.source === 'race'), [unpinnedExtras]);
+  const unpinnedBg = useMemo(() => unpinnedExtras.filter((f) => f.source === 'background'), [unpinnedExtras]);
   const otherSpells = useMemo(
     () => allSpellRefs.filter((s) => !pinnedSpells.includes(s.id) && !s.castingTime.includes('bonus') && !s.castingTime.includes('reaction')),
     [allSpellRefs, pinnedSpells]
@@ -162,7 +282,7 @@ export function CombatFeaturesSection({
       <Group justify="space-between">
         <SectionTitle>Combat Features</SectionTitle>
         <Group gap={4}>
-          {(suggestedFeatures.length > 0 || otherFeatures.length > 0) && (
+          {(suggestedFeatures.length > 0 || otherFeatures.length > 0 || unpinnedExtras.length > 0) && (
             <Menu shadow="md" width={280} position="bottom-end" withinPortal>
               <Menu.Target>
                 <Button size="compact-xs" variant="subtle" leftSection={<IconPlus size={12} />}>
@@ -183,8 +303,38 @@ export function CombatFeaturesSection({
                 )}
                 {otherFeatures.length > 0 && (
                   <>
-                    <Menu.Label>Other features</Menu.Label>
+                    <Menu.Label>Other class features</Menu.Label>
                     {otherFeatures.map((f) => (
+                      <Menu.Item key={f.id} onClick={() => onPinFeature(f.id)}>
+                        {f.name}
+                      </Menu.Item>
+                    ))}
+                  </>
+                )}
+                {unpinnedFeats.length > 0 && (
+                  <>
+                    <Menu.Label>Feats</Menu.Label>
+                    {unpinnedFeats.map((f) => (
+                      <Menu.Item key={f.id} onClick={() => onPinFeature(f.id)}>
+                        {f.name}
+                      </Menu.Item>
+                    ))}
+                  </>
+                )}
+                {unpinnedRace.length > 0 && (
+                  <>
+                    <Menu.Label>Race traits</Menu.Label>
+                    {unpinnedRace.map((f) => (
+                      <Menu.Item key={f.id} onClick={() => onPinFeature(f.id)}>
+                        {f.name}
+                      </Menu.Item>
+                    ))}
+                  </>
+                )}
+                {unpinnedBg.length > 0 && (
+                  <>
+                    <Menu.Label>Background</Menu.Label>
+                    {unpinnedBg.map((f) => (
                       <Menu.Item key={f.id} onClick={() => onPinFeature(f.id)}>
                         {f.name}
                       </Menu.Item>
@@ -242,22 +392,39 @@ export function CombatFeaturesSection({
         </Text>
       )}
 
-      {pinnedFeatureItems.map((f) => (
-        <Paper key={f.id} p="xs" radius="sm" style={darkPaperStyle}>
-          <Group justify="space-between" wrap="nowrap">
-            <Stack gap={0} style={{ flex: 1, minWidth: 0 }}>
-              <Group gap={4}>
-                <WikiLink tagType="classFeature" name={f.name} source={f.source} />
-                <Text size="xs" c="parchment.5">Lv {f.level}</Text>
-              </Group>
-              <Text size="xs" c="parchment.4" lineClamp={2}>{f.description}</Text>
-            </Stack>
-            <ActionIcon size="sm" variant="subtle" color="parchment" onClick={() => onUnpinFeature(f.id)} title="Unpin">
-              <IconPinnedOff size={14} />
-            </ActionIcon>
-          </Group>
-        </Paper>
-      ))}
+      {pinnedFeatureItems.map((f) => {
+        const isClassFeature = !f.id.includes('::');
+        const tagType = isClassFeature ? 'classFeature'
+          : f.source === 'feat' ? 'feat'
+          : f.source === 'race' ? 'race'
+          : f.source === 'background' ? 'background'
+          : undefined;
+        const badge = f.source === 'feat' ? 'Feat'
+          : f.source === 'race' ? 'Race'
+          : f.source === 'background' ? 'Background'
+          : null;
+        return (
+          <Paper key={f.id} p="xs" radius="sm" style={darkPaperStyle}>
+            <Group justify="space-between" wrap="nowrap">
+              <Stack gap={0} style={{ flex: 1, minWidth: 0 }}>
+                <Group gap={4}>
+                  {tagType ? (
+                    <WikiLink tagType={tagType} name={f.name} source={isClassFeature ? f.source : undefined} />
+                  ) : (
+                    <Text size="sm" fw={600} c="parchment.2">{f.name}</Text>
+                  )}
+                  {isClassFeature && <Text size="xs" c="parchment.5">Lv {f.level}</Text>}
+                  {badge && <Text size="xs" c="parchment.6" fs="italic">{badge}</Text>}
+                </Group>
+                {f.description && <Text size="xs" c="parchment.4" lineClamp={2}>{f.description}</Text>}
+              </Stack>
+              <ActionIcon size="sm" variant="subtle" color="parchment" onClick={() => onUnpinFeature(f.id)} title="Unpin">
+                <IconPinnedOff size={14} />
+              </ActionIcon>
+            </Group>
+          </Paper>
+        );
+      })}
 
       {pinnedSpellItems.map((s) => (
         <Paper key={s.id} p="xs" radius="sm" style={darkPaperStyle}>

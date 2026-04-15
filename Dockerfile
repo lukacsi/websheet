@@ -4,7 +4,7 @@ RUN corepack enable
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY . .
-ENV VITE_PB_URL=""
+ENV VITE_PB_URL="/"
 RUN pnpm build
 
 FROM nginx:alpine

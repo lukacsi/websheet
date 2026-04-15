@@ -35,7 +35,7 @@ export function LoadCharacter() {
   const [passphrase, setPassphrase] = useState('');
   const [verifying, setVerifying] = useState(false);
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   async function handleImport(file: File | null) {
     if (!file) return;

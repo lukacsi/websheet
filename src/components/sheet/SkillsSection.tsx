@@ -59,18 +59,18 @@ export function SkillsSection({
             ? { borderLeft: '2px solid var(--mantine-color-gold-5)' }
             : prof
               ? { borderLeft: '2px solid var(--mantine-color-inkBrown-7)' }
-              : { opacity: 0.6 };
+              : {};
           const modColor = mod > 0 ? undefined : mod < 0 ? 'bloodRed.4' : 'parchment.6';
           return (
             <Table.Tr key={skill} style={rowStyle}>
-              <Table.Td w={30}>
+              <Table.Td w={22} p={2}>
                 <Checkbox
                   size="xs"
                   checked={prof}
                   onChange={() => toggleProf(skill)}
                 />
               </Table.Td>
-              <Table.Td w={30}>
+              <Table.Td w={22} p={2}>
                 <Checkbox
                   size="xs"
                   checked={exp}
@@ -80,13 +80,13 @@ export function SkillsSection({
                   styles={exp ? { input: { backgroundColor: 'var(--mantine-color-inkBrown-6)' } } : undefined}
                 />
               </Table.Td>
-              <Table.Td w={40}>
-                <Text size="sm" fw={600} c={modColor}>{formatModifier(mod)}</Text>
+              <Table.Td w={32} p={2}>
+                <Text size="xs" fw={600} c={modColor}>{formatModifier(mod)}</Text>
               </Table.Td>
-              <Table.Td>
-                <WikiLink tagType="skill" name={skill} displayText={titleCase(skill)} />
+              <Table.Td style={{ whiteSpace: 'nowrap' }} p={2}>
+                <WikiLink tagType="skill" name={skill} displayText={titleCase(skill)} size="xs" />
               </Table.Td>
-              <Table.Td w={40}>
+              <Table.Td w={30} p={2}>
                 <Text size="xs" c="parchment.5" fw={500}>{ABILITY_ABBR[abilityKey]}</Text>
               </Table.Td>
             </Table.Tr>

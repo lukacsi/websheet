@@ -3,9 +3,9 @@ import { useParams } from 'react-router-dom';
 import {
   Container, Text, TextInput, Group, Stack, Grid, Paper,
   LoadingOverlay, Button, Checkbox, Select, NumberInput, Tabs, ActionIcon,
-  Modal, PasswordInput,
+  Modal, PasswordInput, Image, Tooltip,
 } from '@mantine/core';
-import { IconMoon, IconCampfire, IconPencil, IconCheck, IconDownload } from '@tabler/icons-react';
+import { IconMoon, IconCampfire, IconPencil, IconCheck, IconDownload, IconSword, IconUser } from '@tabler/icons-react';
 import { hashPassphrase } from '@/utils/passphrase';
 import { exportCharacter, downloadJson } from '@/utils/character-import';
 import { numOrDefault } from '@/utils/form-helpers';
@@ -86,6 +86,15 @@ export function CharacterSheet() {
       <Paper p="xs" mb="xs" style={surfaceStyle}>
         {/* Row 1: Identity */}
         <Group gap="sm" align="center" wrap="wrap">
+          <Tooltip label="Set portrait in About → Appearance" position="bottom" disabled={!!character.portraitUrl}>
+            <div style={{ width: 40, height: 40, borderRadius: 4, overflow: 'hidden', border: '1px solid var(--mantine-color-dark-5)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--mantine-color-dark-7)', cursor: 'pointer' }} onClick={() => setActiveTab('about')}>
+              {character.portraitUrl ? (
+                <Image src={character.portraitUrl} alt="Portrait" w={40} h={40} fit="cover" fallbackSrc="" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              ) : (
+                <IconUser size={22} style={{ color: 'var(--mantine-color-parchment-7)' }} />
+              )}
+            </div>
+          </Tooltip>
           <TextInput
             value={character.name}
             onChange={(e) => update({ name: e.currentTarget.value })}
@@ -172,6 +181,18 @@ export function CharacterSheet() {
             onChange={(e) => update({ inspiration: e.currentTarget.checked })}
             size="xs"
           />
+          {character.attacks.length > 0 && (() => {
+            const best = character.attacks.reduce((a, b) =>
+              (parseInt(b.attackBonus, 10) || 0) > (parseInt(a.attackBonus, 10) || 0) ? b : a
+            );
+            return (
+              <Group gap={4} style={{ cursor: 'pointer' }} onClick={() => setActiveTab('combat')}>
+                <IconSword size={14} style={{ color: 'var(--mantine-color-parchment-5)' }} />
+                <Text size="xs" c="parchment.3" fw={600}>{best.name}</Text>
+                <Text size="xs" c="parchment.5">{best.attackBonus}</Text>
+              </Group>
+            );
+          })()}
           <Button size="compact-sm" variant="filled" color="parchment" onClick={sheet.shortRest} leftSection={<IconMoon size={14} />}>
             Short Rest
           </Button>
@@ -303,6 +324,9 @@ export function CharacterSheet() {
                 classes={character.classes ?? []}
                 level={character.level}
                 spells={character.spells ?? []}
+                feats={character.feats ?? []}
+                raceId={character.raceId}
+                backgroundId={character.backgroundId}
                 pinnedFeatures={character.pinnedCombatFeatures ?? []}
                 pinnedSpells={character.pinnedCombatSpells ?? []}
                 onPinFeature={(id) => update({ pinnedCombatFeatures: [...(character.pinnedCombatFeatures ?? []), id] })}

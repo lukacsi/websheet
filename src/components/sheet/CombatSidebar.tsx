@@ -6,8 +6,6 @@ import { numOrDefault } from '@/utils/form-helpers';
 import {
   elevatedStyle,
   glowAccent,
-  centeredInputStyles,
-  centeredBoldInputStyles,
   centeredLargeInputStyles,
   centeredCompactInputStyles,
 } from '@/theme/styles';
@@ -139,7 +137,7 @@ export function CombatSidebar({ character, calculatedInitiative, calculatedProfB
             step={5}
             size="xs"
             suffix=" ft"
-            styles={centeredInputStyles}
+            styles={centeredLargeInputStyles}
           />
         </StatBox>
         <StatBox label="Initiative">
@@ -147,7 +145,8 @@ export function CombatSidebar({ character, calculatedInitiative, calculatedProfB
             value={character.initiative}
             onChange={(v) => onChange({ initiative: numOrDefault(v, 0) })}
             size="xs"
-            styles={centeredBoldInputStyles}
+            prefix="+"
+            styles={centeredLargeInputStyles}
           />
           <Text size="xs" c="parchment.6">auto: {formatModifier(calculatedInitiative)}</Text>
         </StatBox>
@@ -156,7 +155,8 @@ export function CombatSidebar({ character, calculatedInitiative, calculatedProfB
             value={character.proficiencyBonus}
             onChange={(v) => onChange({ proficiencyBonus: numOrDefault(v, 2) })}
             size="xs"
-            styles={centeredBoldInputStyles}
+            prefix="+"
+            styles={centeredLargeInputStyles}
           />
           <Text size="xs" c="parchment.6">auto: {formatModifier(calculatedProfBonus)}</Text>
         </StatBox>

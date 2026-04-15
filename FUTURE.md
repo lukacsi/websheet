@@ -20,6 +20,15 @@
 - [x] `backgroundName` prop already removed
 - [x] `parchmentBgLight` / `textMuted` tokens never existed
 
+### Usage critic from DND session 2026/04/01
+- [x] ~~cant pin added features/features, only class feautres~~
+- [x] ~~cant manage custom resources from the header, make it clickable~~
+- [x] ~~revamp character portrait, display it almost always~~ (URL-based; file upload TBD)
+- [x] ~~Display primary weapon in header~~
+- [x] ~~Add divider between class features and features/custom features and racial traits~~
+- [x] ~~Some Skills names are two lines should be uniform~~
+- When clicking on action ecomomy, size changes
+
 ### Skipped (with rationale)
 - **Theme component overrides** — `darkPaperStyle`/`accordionDarkStyles` constants work; global defaults risk breaking wizard
 - **useListCrud hook** — add functions too specialized per component
