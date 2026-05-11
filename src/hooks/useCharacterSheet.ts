@@ -69,7 +69,7 @@ const DEFAULT_CHARACTER: Character = {
   level: 1,
   xp: 0,
   inspiration: false,
-  notes: { entries: [], general: '', mindmap: [] },
+  notes: '',
 };
 
 export function useCharacterSheet(id: string | undefined) {
