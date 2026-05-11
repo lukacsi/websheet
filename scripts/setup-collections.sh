@@ -311,7 +311,7 @@ create_collection "characters" '{
     {"name": "level", "type": "number"},
     {"name": "xp", "type": "number"},
     {"name": "inspiration", "type": "bool"},
-    {"name": "notes", "type": "text"},
+    {"name": "notes", "type": "json", "maxSize": 5242880},
     {"name": "portraitUrl", "type": "text"}
   ],
   "indexes": [

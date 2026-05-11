@@ -69,7 +69,7 @@ const DEFAULT_CHARACTER: Character = {
   level: 1,
   xp: 0,
   inspiration: false,
-  notes: '',
+  notes: { entries: [], general: '', mindmap: [] },
 };
 
 export function useCharacterSheet(id: string | undefined) {
@@ -157,12 +157,13 @@ export function useCharacterSheet(id: string | undefined) {
 
   // Debounced auto-save
   const save = useCallback(async (char: Character) => {
+    const payload = { ...char } as unknown as Record<string, unknown>;
     try {
       let charId = savedId;
       if (savedId) {
-        await updateRecord('characters', savedId, char as unknown as Record<string, unknown>);
+        await updateRecord('characters', savedId, payload);
       } else {
-        const created = await createRecord<Character>('characters', char as unknown as Record<string, unknown>);
+        const created = await createRecord<Character>('characters', payload);
         charId = created.id;
         setSavedId(created.id);
         savedIdRef.current = created.id;
