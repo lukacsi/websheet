@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# Block commits that wouldn't survive CI's `tsc -b` check.
+# Matches what `pnpm run build` does before vite — catches the
+# divergence between `tsc --noEmit` and `tsc -b` (project refs).
+pnpm exec tsc -b

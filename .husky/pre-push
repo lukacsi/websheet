@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# Last safety net before code lands on a branch that runs CI.
+# Runs the full production build — same command the Vite step runs
+# in CI, so anything that breaks the build can't slip past.
+pnpm run build
