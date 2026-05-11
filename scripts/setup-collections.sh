@@ -1,10 +1,17 @@
 #!/bin/bash
 # Creates PocketBase collections via the admin API
-# Usage: ./scripts/setup-collections.sh [PB_URL] [EMAIL] [PASSWORD]
+# Usage: PB_ADMIN_PASSWORD=... ./scripts/setup-collections.sh [PB_URL] [EMAIL]
+# Password MUST be supplied via env var; no default is shipped.
 
 PB_URL="${1:-http://127.0.0.1:8090}"
-EMAIL="${2:-admin@websheet.local}"
-PASSWORD="${3:-Passw0rd2026x}"
+EMAIL="${2:-${PB_ADMIN_EMAIL:-admin@websheet.local}}"
+PASSWORD="${PB_ADMIN_PASSWORD:-}"
+
+if [ -z "$PASSWORD" ]; then
+  echo "Error: PB_ADMIN_PASSWORD env var is required." >&2
+  echo "Usage: PB_ADMIN_PASSWORD=... ./scripts/setup-collections.sh [PB_URL] [EMAIL]" >&2
+  exit 1
+fi
 
 # Auth
 TOKEN=$(curl -s -X POST "$PB_URL/api/collections/_superusers/auth-with-password" \

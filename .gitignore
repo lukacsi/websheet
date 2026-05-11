@@ -25,6 +25,8 @@ dist-ssr
 
 # PocketBase
 pocketbase
+pb_data/
+!pb_data/.gitkeep
 
 # 5e.tools data (cloned repo)
 data/
