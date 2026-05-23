@@ -35,6 +35,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Anchor component={Link} to="/load" c="parchment.4" size="sm">
                 Load
               </Anchor>
+              <Anchor component={Link} to="/lookup" c="parchment.4" size="sm">
+                Lookup
+              </Anchor>
             </Group>
           </Group>
         </Container>

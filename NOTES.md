@@ -1,5 +1,52 @@
 # Notes — WebSheet
 
+## 2026-04-16 — Notes system full redesign + code review
+
+**Context:** User wanted to "nail note taking and multiclassing". Did comprehensive code review, then reenvisioned notes from scratch.
+
+**Analysis:**
+Code review found 5 HIGH severity issues:
+1. Passphrase: unsalted SHA-256 (dictionary-attackable)
+2. `save` closure reads stale `savedId` instead of `savedIdRef.current`
+3. `notes: string | CharacterNotes` union leaks PB serialization into domain
+4. `LoadCharacter.tsx:74` uses inline escape, not shared `escapeFilter`
+5. `CreatureDetail.tsx` uses `any` — array maps throw if fields absent
+
+Note-taking redesign evolved through several iterations → ended at Option B:
+- **Unified entry pool** (`CharacterNotes.entries: NoteEntry[]`) — NPCs, quests, loot, locations, notes, session logs all share one array
+- **Hierarchy via `links` with `kind='contains'`** (not `parentId`) — same entry can appear under multiple parents
+- **Semantic relationships** use the same `links[]` with free-text `kind`
+- Two views: **List** (flat, searchable, filtered by type chips) + **Outline** (tree from `contains` links)
+- **EntryDrawer** for deep detail editing with tags, links, backrefs, "Nested under" panel
+- Quick-capture bar at top (session by default, any type pickable)
+- General scratchpad collapsible at bottom
+
+Multiclassing: seven `.classes[0]` hardcodes across the app — data model supports multiclass but UI doesn't. Deferred to next session.
+
+**Decisions:**
+- Removed `MindMap.tsx` + `MindMapNode` from live data model (kept types for legacy migration)
+- Removed `parentId`/`order` from `NoteEntry` — hierarchy is just a special link kind
+- `contains` links filtered out of drawer's "Linked to" panel (shown in "Nested under" instead)
+- Migration chain handles 4 shapes: raw string → per-type strings → per-type arrays → unified pool with contains links
+
+**Done:**
+- Code review saved → `docs/code-review-2026-04-15.md`
+- Roadmap saved → `docs/roadmap-notes-and-multiclass.md`
+- Created: `EntryDrawer.tsx`, `Outline.tsx`, `Outline.module.css`, `QuickSearch.tsx`, `Lookup.tsx`, `notes-migration.ts`
+- Rewrote: `NotesSection.tsx`, `types/character.ts`, `CharacterSheet.tsx`, `hooks/useCharacterSheet.ts`
+- Deleted: `MindMap.tsx`, `MindMap.module.css`
+- Build green throughout (880-885kB, same warning about code-splitting)
+
+**Outstanding (next session):**
+- Commit current changes (15 modified + 6 new src files, plus 2 new docs files)
+- Address the 5 HIGH review issues
+- Multiclass de-hardcode (7 `.classes[0]` sites in `CharacterSheet.tsx`, `useCharacterSheet.ts`, `FeaturesSection.tsx`, `CombatFeaturesSection.tsx`)
+- Level-up flow
+- Test the outline migration path with real existing data
+- Bundle size optimization (875kB → code-split candidates: Mantine icons, wiki detail views)
+
+---
+
 ## 2026-03-09 — UX Review Round 2 (Functional Testing, ALL 13 Classes)
 
 **Context:** Professional UX/UI review of WebSheet post-redesign. 13 rounds of testing covering all D&D 5e classes. Goal: find all functional gaps, edge cases, and automation opportunities.

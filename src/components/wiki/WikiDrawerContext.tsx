@@ -5,6 +5,7 @@ export interface WikiTarget {
   tagType: EntityTagType;
   name: string;
   source?: string;
+  edition?: 'one' | 'classic';
 }
 
 interface WikiDrawerState {

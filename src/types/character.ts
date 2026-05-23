@@ -1,6 +1,65 @@
 import type { AbilityScores, AbilityKey } from './ability';
 import type { Edition, Condition, Skill, Speed } from './common';
 
+export interface SessionLogEntry {
+  id: string;
+  text: string;
+  timestamp: string; // ISO date
+}
+
+export type MindMapNodeType = 'note' | 'npc' | 'quest' | 'location' | 'loot' | 'session';
+
+export interface MindMapNode {
+  id: string;
+  text: string;         // display text when no linked entry, or fallback
+  type: MindMapNodeType;
+  children: MindMapNode[];
+  collapsed?: boolean;
+  linkedEntryId?: string; // reference to NoteEntry in the pool (authoritative source of name/type)
+  // Deprecated / migration
+  checked?: boolean;
+  timestamp?: string;
+  detail?: string;
+}
+
+export type NoteEntryType = 'npc' | 'quest' | 'location' | 'loot' | 'note' | 'session';
+
+/** Relationship between entries.
+ *  Reserved kind 'contains' is used by the outline view to render hierarchy.
+ *  All other kinds are semantic (ally, enemy, visited, etc.).
+ */
+export interface EntryLink {
+  targetId: string;
+  kind?: string;
+}
+
+export interface NoteEntry {
+  id: string;
+  type: NoteEntryType;
+  name: string;
+  detail: string;
+  tags?: string[];
+  imageUrl?: string;
+  /** Outgoing edges — hierarchy + semantic relationships. Order of 'contains' links = outline child order. */
+  links?: EntryLink[];
+  fields?: Record<string, string>;
+  checked?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CharacterNotes {
+  entries: NoteEntry[];   // unified pool — all notes, NPCs, quests, locations, loot, session logs. Hierarchy via links[] with kind='contains'.
+  general: string;        // pinned scratchpad for character-level freeform thoughts
+  // Legacy fields — normalize() drains them into entries[]
+  mindmap?: MindMapNode[];
+  session?: SessionLogEntry[];
+  npcs?: NoteEntry[] | string;
+  quests?: NoteEntry[] | string;
+  loot?: NoteEntry[] | string;
+  locations?: NoteEntry[] | string;
+}
+
 export interface CharacterClass {
   classId: string;
   className: string;
@@ -168,7 +227,7 @@ export interface Character {
   level: number; // total level across all classes
   xp?: number;
   inspiration: boolean;
-  notes: string;
+  notes: string | CharacterNotes;
   portraitUrl?: string;
 
   createdAt?: string;

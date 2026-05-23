@@ -1,0 +1,73 @@
+.row {
+  position: relative;
+  border-radius: 4px;
+  transition: background-color 0.1s;
+}
+
+.row:hover {
+  background-color: rgba(191, 157, 100, 0.04);
+}
+
+.row:hover .actions {
+  opacity: 1;
+}
+
+.actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.dragHandle {
+  cursor: grab;
+  opacity: 0.3;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+
+.row:hover .dragHandle {
+  opacity: 0.7;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.dragging {
+  opacity: 0.3;
+}
+
+/* Drop indicators */
+.drop_before {
+  border-top: 2px solid var(--mantine-color-gold-5);
+}
+
+.drop_after {
+  border-bottom: 2px solid var(--mantine-color-gold-5);
+}
+
+.drop_child {
+  background-color: rgba(191, 157, 100, 0.1);
+  border-left: 2px solid var(--mantine-color-gold-5);
+}
+
+.guides {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.guideLine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: rgba(191, 157, 100, 0.08);
+}

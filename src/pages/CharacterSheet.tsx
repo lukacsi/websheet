@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-  Container, Text, TextInput, Group, Stack, Grid, Paper,
+  Container, Text, TextInput, Group, Stack, Paper,
   LoadingOverlay, Button, Checkbox, Select, NumberInput, Tabs, ActionIcon,
   Modal, PasswordInput, Image, Tooltip,
 } from '@mantine/core';
@@ -34,6 +34,7 @@ import { AppearanceSection } from '@/components/sheet/AppearanceSection';
 import { BackstorySection } from '@/components/sheet/BackstorySection';
 import { SectionTitle } from '@/components/sheet/SectionTitle';
 import { QuickReference } from '@/components/sheet/QuickReference';
+import { QuickSearch } from '@/components/sheet/QuickSearch';
 import { ActionEconomySection } from '@/components/sheet/ActionEconomySection';
 import { StandardActionsSection } from '@/components/sheet/StandardActionsSection';
 import { CombatFeaturesSection } from '@/components/sheet/CombatFeaturesSection';
@@ -81,9 +82,9 @@ export function CharacterSheet() {
   }
 
   return (
-    <Container fluid px="md" py={0}>
+    <Container fluid px="md" py={0} className={styles.wrapper}>
       {/* ── Header ── */}
-      <Paper p="xs" mb="xs" style={surfaceStyle}>
+      <Paper p="xs" mb="xs" style={{ ...surfaceStyle, flexShrink: 0 }}>
         {/* Row 1: Identity */}
         <Group gap="sm" align="center" wrap="wrap">
           <Tooltip label="Set portrait in About → Appearance" position="bottom" disabled={!!character.portraitUrl}>
@@ -200,6 +201,7 @@ export function CharacterSheet() {
             Long Rest
           </Button>
           <div style={{ flex: 1 }} />
+          <QuickSearch edition={character.edition} />
           {savedId && (
             <ActionIcon
               variant="subtle"
@@ -281,9 +283,10 @@ export function CharacterSheet() {
             onTabChange={(tab) => setActiveTab(tab)}
           />
 
-        <Tabs value={activeTab} onChange={setActiveTab} keepMounted={false} style={{ marginTop: 'var(--mantine-spacing-sm)' }} styles={{
-          root: { display: 'flex', flexDirection: 'column', minHeight: 0 },
-          panel: { flex: 1, overflowY: 'auto', paddingTop: 'var(--mantine-spacing-sm)' },
+        <Tabs value={activeTab} onChange={setActiveTab} keepMounted={false} style={{ marginTop: 'var(--mantine-spacing-sm)', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }} styles={{
+          root: { display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 },
+          list: { flexShrink: 0, position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'var(--mantine-color-dark-7)' },
+          panel: { flex: 1, overflowY: 'auto', paddingTop: 'var(--mantine-spacing-sm)', scrollbarWidth: 'thin' as React.CSSProperties['scrollbarWidth'] },
           tab: {
             fontFamily: '"Cinzel", serif',
             textTransform: 'uppercase',
@@ -369,8 +372,15 @@ export function CharacterSheet() {
           </Tabs.Panel>
 
           <Tabs.Panel value="inventory">
-            <Grid gutter="md">
-              <Grid.Col span={{ base: 12, sm: 7 }}>
+            <Stack gap="md">
+              <div>
+                <SectionTitle>Currency</SectionTitle>
+                <CurrencySection
+                  currency={character.currency}
+                  onChange={(currency) => update({ currency })}
+                />
+              </div>
+              <div>
                 <SectionTitle>Inventory</SectionTitle>
                 <InventorySection
                   items={character.items}
@@ -378,15 +388,8 @@ export function CharacterSheet() {
                   onChange={(items) => update({ items })}
                   onAttunementChange={(attunementSlots) => update({ attunementSlots })}
                 />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 5 }}>
-                <SectionTitle>Currency</SectionTitle>
-                <CurrencySection
-                  currency={character.currency}
-                  onChange={(currency) => update({ currency })}
-                />
-              </Grid.Col>
-            </Grid>
+              </div>
+            </Stack>
           </Tabs.Panel>
 
           <Tabs.Panel value="features">

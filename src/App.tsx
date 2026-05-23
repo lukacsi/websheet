@@ -8,6 +8,7 @@ import { Home } from './pages/Home';
 import { CreateCharacter } from './pages/CreateCharacter';
 import { LoadCharacter } from './pages/LoadCharacter';
 import { CharacterSheet } from './pages/CharacterSheet';
+import { Lookup } from './pages/Lookup';
 import { WikiDrawerProvider } from './components/wiki/WikiDrawerContext';
 import { EntityDrawer } from './components/wiki/EntityDrawer';
 
@@ -28,6 +29,7 @@ export default function App() {
                 <Route path="/create" element={<CreateCharacter />} />
                 <Route path="/load" element={<LoadCharacter />} />
                 <Route path="/character/:id" element={<CharacterSheet />} />
+                <Route path="/lookup" element={<Lookup />} />
               </Routes>
             </AppShell>
           </BrowserRouter>

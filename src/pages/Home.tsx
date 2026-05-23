@@ -9,8 +9,10 @@ export function Home() {
   const [recent] = useState<RecentEntry[]>(() => getRecentCharacters());
   const loaded = true;
 
-  const classLabel = (char: RecentEntry) =>
-    char.classes?.map((c) => `${c.className} ${c.level}`).join(' / ') || `Lv ${char.level}`;
+  const classLabel = (char: RecentEntry) => {
+    const parts = char.classes?.map((c) => `${c.className} ${c.level}`).join(' / ');
+    return parts ? `Lv ${char.level} — ${parts}` : `Lv ${char.level}`;
+  };
 
   return (
     <Container size="md" py="xl">

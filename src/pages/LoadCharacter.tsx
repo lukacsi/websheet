@@ -115,8 +115,10 @@ export function LoadCharacter() {
     }
   }
 
-  const classLabel = (char: CharacterSummary) =>
-    char.classes?.map((c) => `${c.className} ${c.level}`).join(' / ') || `Level ${char.level}`;
+  const classLabel = (char: CharacterSummary) => {
+    const parts = char.classes?.map((c) => `${c.className} ${c.level}`).join(' / ');
+    return parts ? `Lv ${char.level} — ${parts}` : `Lv ${char.level}`;
+  };
 
   return (
     <Container size="md" py="xl">

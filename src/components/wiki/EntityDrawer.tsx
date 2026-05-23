@@ -18,7 +18,7 @@ function DrawerContent({ target }: { target: WikiTarget }) {
     setError(null);
     setData(null);
 
-    lookupEntity(target.tagType, target.name, target.source).then(result => {
+    lookupEntity(target.tagType, target.name, target.source, target.edition).then(result => {
       if (cancelled) return;
       setData(result);
       if (!result) setError('Not found');
@@ -30,7 +30,7 @@ function DrawerContent({ target }: { target: WikiTarget }) {
     });
 
     return () => { cancelled = true; };
-  }, [target.tagType, target.name, target.source]);
+  }, [target.tagType, target.name, target.source, target.edition]);
 
   if (loading) return <Loader size="sm" mx="auto" mt="xl" />;
 
