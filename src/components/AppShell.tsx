@@ -29,10 +29,10 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Title order={3} c="parchment.2">WebSheet</Title>
             </Anchor>
             <Group gap="md">
-              <Anchor component={Link} to="/create" c="parchment.4" size="sm">
+              <Anchor component={Link} to="/create" c="parchment.4" size="sm" py={12}>
                 New Character
               </Anchor>
-              <Anchor component={Link} to="/load" c="parchment.4" size="sm">
+              <Anchor component={Link} to="/load" c="parchment.4" size="sm" py={12}>
                 Load
               </Anchor>
               <Anchor component={Link} to="/lookup" c="parchment.4" size="sm">
