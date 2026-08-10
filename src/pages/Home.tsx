@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container, Title, Text, SimpleGrid, Card, Button, Stack, Group, Badge, List, ThemeIcon } from '@mantine/core';
+import { Container, Title, Text, SimpleGrid, Card, Button, Stack, Group, Flex, Badge, List, ThemeIcon } from '@mantine/core';
 import { IconWand, IconFileText, IconSearch } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 import { cardStyle, elevatedStyle, glowAccent } from '@/theme/styles';
@@ -25,7 +25,12 @@ export function Home() {
 
       {/* Hero — Guided Create */}
       <Card padding="xl" mb="lg" style={{ ...elevatedStyle, ...glowAccent }}>
-        <Group justify="space-between" align="flex-start" wrap="nowrap">
+        <Flex
+          justify="space-between"
+          align={{ base: 'stretch', sm: 'flex-start' }}
+          direction={{ base: 'column', sm: 'row' }}
+          gap="md"
+        >
           <Stack gap="xs" style={{ flex: 1 }}>
             <Title order={3}>Guided Create</Title>
             <Text c="parchment.4" size="sm">
@@ -52,17 +57,18 @@ export function Home() {
             variant="filled"
             color="gold"
             size="md"
-            mt="xs"
+            mt={{ base: 0, sm: 'xs' }}
+            w={{ base: '100%', sm: 'auto' }}
             leftSection={<IconWand size={18} />}
           >
             Start Wizard
           </Button>
-        </Group>
+        </Flex>
       </Card>
 
       {/* Secondary — Quick Create + Load */}
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg" mb="xl">
-        <Card padding="lg" style={cardStyle}>
+        <Card padding="lg" style={{ ...cardStyle, display: 'flex', flexDirection: 'column' }}>
           <Group gap="xs" mb="xs">
             <IconFileText size={18} color="var(--mantine-color-parchment-5)" />
             <Title order={4}>Quick Create</Title>
@@ -70,12 +76,12 @@ export function Home() {
           <Text c="parchment.5" size="sm" mb="md">
             Blank sheet — fill in whatever you want, no rules enforced.
           </Text>
-          <Button component={Link} to="/character/new" variant="outline" size="sm" fullWidth>
+          <Button component={Link} to="/character/new" variant="outline" size="sm" fullWidth mt="auto">
             Blank Sheet
           </Button>
         </Card>
 
-        <Card padding="lg" style={cardStyle}>
+        <Card padding="lg" style={{ ...cardStyle, display: 'flex', flexDirection: 'column' }}>
           <Group gap="xs" mb="xs">
             <IconSearch size={18} color="var(--mantine-color-parchment-5)" />
             <Title order={4}>Load Character</Title>
@@ -83,7 +89,7 @@ export function Home() {
           <Text c="parchment.5" size="sm" mb="md">
             Open an existing character by name and passphrase.
           </Text>
-          <Button component={Link} to="/load" variant="outline" size="sm" fullWidth>
+          <Button component={Link} to="/load" variant="outline" size="sm" fullWidth mt="auto">
             Load Character
           </Button>
         </Card>
