@@ -55,6 +55,7 @@ const bloodRed: MantineColorsTuple = [
 export const theme = createTheme({
   primaryColor: 'inkBrown',
   primaryShade: { light: 6, dark: 6 },
+  autoContrast: true,
   colors: {
     parchment,
     inkBrown,
@@ -81,9 +82,6 @@ export const theme = createTheme({
       styles: {
         root: {
           transition: 'transform 0.15s, box-shadow 0.15s, border-color 0.15s',
-          '&:hover': {
-            transform: 'translateY(-1px)',
-          },
         },
       },
     },
